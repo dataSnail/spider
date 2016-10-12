@@ -1,1 +1,1 @@
-sina spider --20161012 14:49
+sina spider --20161012
