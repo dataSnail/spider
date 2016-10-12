@@ -280,7 +280,7 @@ class StatusSpider(Spider):
         if mblog['created_timestamp']:
             item['created_timestamp'].append(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mblog['created_timestamp'])))
         else:
-            item['created_timestamp'].append(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            item['created_timestamp'].append(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
 
     # 填写dItem
     def fill_dItem(self, item, mblog):
