@@ -113,8 +113,11 @@ class StatusSpider(Spider):
                             self.init_item(reItem)
                             self.fill_item(reItem, mblog['retweeted_status'])
                             yield reItem
-
-                            jItem['uid'].append(mblog['retweeted_status']['user']['id'])
+                            # 把整个json保存下来
+                            if mblog['retweeted_status']['user']['id']:
+                                jItem['uid'].append(mblog['retweeted_status']['user']['id'])
+                            else:
+                                jItem['uid'].append('0')
                             jItem['allJson'].append(mblog['retweeted_status'])
 
                             # 并且原微博的作者也要保存
@@ -130,7 +133,11 @@ class StatusSpider(Spider):
                         yield dItem
                     else:
                         self.fill_item(item, mblog)
-                        jItem['uid'].append(mblog['user']['id'])
+                        # 把整个json保存下来
+                        if mblog['user']['id']:
+                            jItem['uid'].append(mblog['user']['id'])
+                        else:
+                            jItem['uid'].append('0')
                         jItem['allJson'].append(mblog)
 
                 yield item
@@ -161,7 +168,7 @@ class StatusSpider(Spider):
                     self.total_uids = self.get_pre_user_list(100)
                     #重置uIndex
                     uIndex = 0
-                    
+
                 yield Request(self.url_part_one + str(self.total_uids[uIndex]) + self.url_part_two + '1',
                                    meta={'maxPage': -1, 'nowPage': 1, 'uIndex': uIndex}, callback=self.parse_page)
             else:
@@ -199,33 +206,61 @@ class StatusSpider(Spider):
     # 填写item
     def fill_item(self, item, mblog):
         # 用户id
-        item['uid'].append(mblog['user']['id'])
+        if mblog['user']['id']:
+            item['uid'].append(mblog['user']['id'])
+        else:
+            item['uid'].append('0')
         # 微博id
-        item['mid'].append(mblog['mid'])
+        if mblog['mid']:
+            item['mid'].append(mblog['mid'])
+        else:
+            item['mid'].append('0')
         # 微博短id
-        item['bid'].append(mblog['bid'])
+        if mblog['bid']:
+            item['bid'].append(mblog['bid'])
+        else:
+            item['bid'].append('0')
         # 原微博id
         if 'retweeted_status' in mblog.keys():
             item['retweeted_mid'].append(mblog['retweeted_status']['mid'])
         else:
             item['retweeted_mid'].append('0')
         # 微博内容
-        item['text'].append(mblog['text'])
+        if mblog['text']:
+            item['text'].append(mblog['text'])
+        else:
+            item['text'].append('0')
         # 是否是长微博
-        if mblog['isLongText'] == 'true':
-            item['isLongText'].append('1')
+        if mblog['isLongText']:
+            if mblog['isLongText'] == 'true':
+                item['isLongText'].append('1')
         else:
             item['isLongText'].append('0')
         # 微博来源
-        item['source'].append(mblog['source'])
+        if mblog['source']:
+            item['source'].append(mblog['source'])
+        else:
+            item['source'].append('0')
         # 转发数
-        item['reposts_count'].append(mblog['reposts_count'])
+        if mblog['reposts_count']:
+            item['reposts_count'].append(mblog['reposts_count'])
+        else:
+            item['reposts_count'].append('0')
         # 评论数
-        item['comments_count'].append(mblog['comments_count'])
+        if mblog['comments_count']:
+            item['comments_count'].append(mblog['comments_count'])
+        else:
+            item['comments_count'].append('0')
         # 点赞数
-        item['attitudes_count'].append(mblog['attitudes_count'])
+        if mblog['attitudes_count']:
+            item['attitudes_count'].append(mblog['attitudes_count'])
+        else:
+            item['attitudes_count'].append('0')
         # 点赞数，目前不清楚与attitude有什么区别
-        item['like_count'].append(mblog['like_count'])
+        if mblog['like_count']:
+            item['like_count'].append(mblog['like_count'])
+        else:
+            item['like_count'].append('0')
         # 是否含有图片
         if mblog['pic_ids']:
             item['hasPic'].append('1')
@@ -242,7 +277,10 @@ class StatusSpider(Spider):
         else:
             item['hasOutlink'].append('0')
         # 发微博的时间
-        item['created_timestamp'].append(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mblog['created_timestamp'])))
+        if mblog['created_timestamp']:
+            item['created_timestamp'].append(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mblog['created_timestamp'])))
+        else:
+            item['created_timestamp'].append(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
 
     # 填写dItem
     def fill_dItem(self, item, mblog):
@@ -279,7 +317,10 @@ class StatusSpider(Spider):
 
     # 填写uItem
     def fill_uItem(self, uItem, user):
-        uItem['uid'] = user['id']
+        if user['id']:
+            uItem['uid'] = user['id']
+        else:
+            uItem['uid'] = '0'
         uItem['screen_name'] = user['screen_name']
         uItem['profile_image_url'] = user['profile_image_url']
         uItem['statuses_count'] = user['statuses_count']
