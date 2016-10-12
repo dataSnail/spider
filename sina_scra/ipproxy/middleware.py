@@ -1,0 +1,140 @@
+# -*- coding:utf-8 -*-  
+'''
+Created on 2016年10月5日
+
+@author: MQ
+'''
+from sina_scra.ipproxy.agents import AGENTS
+import random
+import logging
+from sina_scra.utils.dbManager2 import dbManager2
+import base64
+
+class UserAgentMiddleware(object):
+    def process_request(self,request,spider):
+        logging.info('using UserAgentMiddleware-----------------------------------------------UserAgentMiddleware')
+        agent = random.choice(AGENTS)
+        if agent:
+            request.headers['User-Agent'] = agent
+            
+
+class ProxyMiddleware(object):
+    ip = '127.0.0.1'
+    port = '1080'
+    protocol = 'HTTP'
+    proxy_addr = "http://%s:%s"%(ip,port)
+    ip_status = -1
+#     last_url = ''
+    conn = dbManager2()
+    cur = conn.get_cur('sinaData')
+    def process_request(self,request,spider):
+#         print request
+        logging.info('using ProxyMiddleware-----------------------------------------------ProxyMiddleware')
+        request.meta['proxy'] = self.proxy_addr
+        
+        
+    def process_response(self,request,response,spider):
+        #切换ip
+        logging.info('url : '+str(request.url)+' ,status:'+str(response.status))
+        if response.status != 200:
+#             self.last_url = request.url
+            self.change_ipproxy()
+            request.meta['proxy'] = self.proxy_addr
+            #切换代理，重新请求，设置不过滤上一次请求的url
+            request.dont_filter = True
+            return request
+#         if not response.url.startswith('http://m.weibo.cn'):
+#             self.change_ipproxy()
+#             request.replace(url=self.last_url)
+#             request.meta['proxy'] = self.proxy_addr
+#             request.dont_filter = True
+#             return request
+        return response
+        
+    def select_ipproxy(self):
+        ip_list = []
+        #更新ip标记
+        sql = 'update ipproxy set status = status+1 where ip = \'%s\' and port = \'%s\'' %(self.ip,self.port)
+        self.cur.execute(sql)
+        self.conn.commit()
+        #选取状态标记最小的一个
+        count = self.cur.execute('select ip,port,protocol from ipproxy order by status asc limit 1')
+        if count > 0:
+            ip_list = self.cur.fetchall()
+        else:
+            print 'no ip can be used in db'
+        return ip_list
+    def process_exception(self,request,exception,spider):
+        logging.info('process_exception ......................')
+#         self.last_url = request.url
+        #切换ip
+        self.change_ipproxy()
+        request.meta['proxy'] = self.proxy_addr
+        return request
+    
+    def change_ipproxy(self):
+        proxy_list = self.select_ipproxy()
+#         print proxy_list
+        if len(proxy_list)==1 and len(proxy_list[0])==3:
+            self.ip = str(proxy_list[0][0])
+            self.port = str(proxy_list[0][1])
+            if len(proxy_list[0][2].split('/'))>1:
+                self.protocol = proxy_list[0][2].split('/')[0]
+            else:
+                self.protocol = proxy_list[0][2]
+            self.proxy_addr = self.protocol+'://%s:%s'%(self.ip,self.port)
+            logging.info('proxy_addr is : '+self.proxy_addr)
+        else:
+            print 'can not change_ipproxy'
+  
+class aBuProxyMiddleware(object):
+    proxyServer = "http://proxy.abuyun.com:9010"
+    proxyUser = "H5S031HK5GAI638P"
+    proxyPass = "0451B74483012582"
+    proxyAuth = "Basic " + base64.encodestring(proxyUser + ":" + proxyPass)
+    print proxyAuth
+    def process_request(self,request,spider):
+#         print request
+        logging.info('using ProxyMiddleware-----------------------------------------------ProxyMiddleware')
+        request.meta['proxy'] = self.proxyServer
+        request.headers["Proxy-Authorization"] = self.proxyAuth
+        
+        
+    def process_response(self,request,response,spider):
+        #切换ip
+        logging.info('url : '+str(request.url)+' ,status:'+str(response.status))
+        if response.status != 200:
+#             self.last_url = request.url
+            #等待
+            request.meta['proxy'] = self.proxyServer
+            request.headers["Proxy-Authorization"] = self.proxyAuth       
+            #切换代理，重新请求，设置不过滤上一次请求的url
+            request.dont_filter = True
+            return request
+        if not response.url.startswith('http://m.weibo.cn'):
+            self.change_ipproxy()
+            request.replace(url=self.last_url)
+            request.meta['proxy'] = self.proxy_addr
+            request.dont_filter = True
+            return request
+        return response
+        
+    def process_exception(self,request,exception,spider):
+        logging.info('process_exception ......................')
+#         self.last_url = request.url
+        #等待
+        request.meta['proxy'] = self.proxyServer
+        request.headers["Proxy-Authorization"] = self.proxyAuth 
+        return request    
+
+
+
+          
+if __name__ == '__main__':
+    a = ProxyMiddleware()
+    a.change_ipproxy()
+    print a.ip
+    print a.port
+    print a.protocol 
+        
+        
