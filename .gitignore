@@ -3,3 +3,4 @@
 *.pyc
 .settings
 .gitignore
+.myumldata

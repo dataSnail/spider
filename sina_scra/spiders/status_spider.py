@@ -26,6 +26,13 @@ class StatusSpider(Spider):
     url_part_one = 'http://m.weibo.cn/page/json?containerid=100505'
     url_part_two = '_-_WEIBO_SECOND_PROFILE_WEIBO&itemid=&page='
     conn = dbManager2()
+    
+    custom_settings={
+                     'ITEM_PIPELINES' : {
+                                            'sina_scra.pipelines.StatusPipeline': 300,
+                                            'sina_scra.pipelines.StatusJsonPipeline': 301,
+                                        }
+                     }
 #     cur = conn.get_cur('sina')
     # 对start_urls进行初始化
     def __init__(self):
@@ -280,8 +287,7 @@ class StatusSpider(Spider):
         if mblog['created_timestamp']:
             item['created_timestamp'].append(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mblog['created_timestamp'])))
         else:
-            item['created_timestamp'].append(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-
+            item['created_timestamp'].append(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
     # 填写dItem
     def fill_dItem(self, item, mblog):
         # 用户id

@@ -26,6 +26,8 @@ class dbManager2():
             logging.error(e)
         return self.cur
     
+    
+    
     def release(self):
         if self.cur != None:
             self.cur.close()

@@ -20,7 +20,7 @@ LOG_LEVEL = 'INFO'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
-#LOG_FILE = 'F:\\sinaSpiderStatus1.log'
+# LOG_FILE = 'F:\\default.log'
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
@@ -68,8 +68,8 @@ DOWNLOADER_MIDDLEWARES = {
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
 #     'sina_scra.pipelines.SinaScraPipeline': 300,
-    'sina_scra.pipelines.StatusPipeline': 300,
-    'sina_scra.pipelines.StatusJsonPipeline': 301,
+#     'sina_scra.pipelines.StatusPipeline': 300,
+#     'sina_scra.pipelines.StatusJsonPipeline': 301,
 #     'sina_scra.pipelines.CommentPipeline': 300,
 }
 
