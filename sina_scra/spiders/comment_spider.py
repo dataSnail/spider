@@ -14,6 +14,7 @@ import time
 import MySQLdb
 import MySQLdb.cursors
 import logging
+from sina_scra.utils.dbManager2 import dbManager2
 
 
 class CommentSpider(Spider):
@@ -34,6 +35,8 @@ class CommentSpider(Spider):
     cookie_SUBP = "0033WrSXqPxfM725Ws9jqgMF55529P9D9WWqGKPmkK7YwfuIK6ON7U5k5JpX5o2p5NHD95Qfeh.pSKnNeoMfWs4DqcjiMrHbIg4aMrxQ"
     cookie_SUHB = "0pHxZc08gWqenE"
     cookie_SSOLoginState = "1475579575"
+
+    conn = dbManager2()
 
     # 对start_urls进行初始化
     def __init__(self):
@@ -114,11 +117,18 @@ class CommentSpider(Spider):
         mIndex = response.meta['mIndex']
         if nowPage >= maxPage:
             # nowPage >= maxPage的话说明这条微博的评论已经爬完了
-            fItem = SinaFlagItem()
-            fItem['uid'] = self.total_uids[mIndex]
-            fItem['mid'] = self.total_mids[mIndex]
-            fItem['comment_flag'] = '1'
-            yield fItem
+            # fItem = SinaFlagItem()
+            # fItem['uid'] = self.total_uids[mIndex]
+            # fItem['mid'] = self.total_mids[mIndex]
+            # fItem['comment_flag'] = '1'
+            # yield fItem
+            which_table = str(long(self.total_uids[mIndex]) % 1000)
+            sql = 'UPDATE wblog_' + which_table + ' SET comment_flag=1 WHERE mid=' + str(self.total_mids[mIndex])
+            cur = self.conn.get_cur('sina')
+            cur.execute(sql)
+            self.conn.commit()
+            cur.close()
+
             # 如果self.total_mids里面有新的mid的话，那就爬新的微博的评论
             if mIndex < len(self.total_mids) - 1:
                 mIndex += 1
@@ -148,24 +158,45 @@ class CommentSpider(Spider):
     # 填写item
     def fill_item(self, item, comment, mid):
         # 用户id
-        item['uid'].append(comment['user']['id'])
+        if comment['user']['id']:
+            item['uid'].append(comment['user']['id'])
+        else:
+            item['uid'].append('0')
         # 评论id
-        item['cid'].append(comment['id'])
+        if comment['id']:
+            item['cid'].append(comment['id'])
+        else:
+            item['cid'].append('0')
         # 微博id
         item['mid'].append(mid)
         # 如果这条评论是回复其他评论a的，那就是a的id
         if 'reply_id' in comment.keys():
-            item['reply_id'].append(comment['reply_id'])
+            if comment['reply_id']:
+                item['reply_id'].append(comment['reply_id'])
+            else:
+                item['reply_id'].append('0')
         else:
             item['reply_id'].append('0')
         # 评论内容
-        item['text'].append(comment['text'])
+        if comment['text']:
+            item['text'].append(comment['text'])
+        else:
+            item['text'].append('0')
         # 来源
-        item['source'].append(comment['source'])
+        if comment['source']:
+            item['source'].append(comment['source'])
+        else:
+            item['source'].append('0')
         # 点赞数
-        item['like_counts'].append(comment['like_counts'])
+        if comment['like_counts']:
+            item['like_counts'].append(comment['like_counts'])
+        else:
+            item['like_counts'].append('0')
         # 发评论的时间
-        item['created_at'].append(comment['created_at'])
+        if comment['created_at']:
+            item['created_at'].append(comment['created_at'])
+        else:
+            item['created_at'].append('0')
 
     def spider_closed(self, spider):
         spider.logger.info('Spider closed: %s', spider.name)

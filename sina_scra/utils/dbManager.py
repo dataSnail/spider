@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-  
+# -*- coding:utf-8 -*-
 '''
 Created on 2016年10月3日
 
@@ -8,11 +8,11 @@ from twisted.enterprise import adbapi
 import MySQLdb.cursors
 
 class dbManager():
-    
-    def __init__(self):
+
+    def __init__(self, my_db='sina'):
         self.dbpool = adbapi.ConnectionPool('MySQLdb',
                                             host = '223.3.94.145',
-                                            db = 'sina',
+                                            db = my_db,
                                             user = 'root',
                                             passwd = 'root@123',
                                             cursorclass = MySQLdb.cursors.DictCursor,

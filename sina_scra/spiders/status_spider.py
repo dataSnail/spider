@@ -26,7 +26,7 @@ class StatusSpider(Spider):
     url_part_one = 'http://m.weibo.cn/page/json?containerid=100505'
     url_part_two = '_-_WEIBO_SECOND_PROFILE_WEIBO&itemid=&page='
     conn = dbManager2()
-    
+
     custom_settings={
                      'ITEM_PIPELINES' : {
                                             'sina_scra.pipelines.StatusPipeline': 300,
@@ -36,22 +36,7 @@ class StatusSpider(Spider):
 #     cur = conn.get_cur('sina')
     # 对start_urls进行初始化
     def __init__(self):
-#         conn = MySQLdb.connect(host='223.3.94.145', db='sina', user='root', passwd='root@123', charset='utf8')
-#         cursor = conn.cursor()
-#         my_sql = 'SELECT uid from scra_flags_0 where wblog_flag = 0 ORDER BY id ASC LIMIT 0,100'
-#         try:
-#             cursor.execute(my_sql)
-#             for result in cursor.fetchall():
-#                 uid = result[0]
-#                 self.total_uids.append(uid)
-#         except MySQLdb.Error, e:
-#             print "StatusSpider MySQL Error:%s" % str(e)
-#         cursor.close()
-#         conn.close()
         self.total_uids = self.get_pre_user_list(100)
-#         self.start_urls.append(self.url_part_one + str(self.total_uids[0]) + self.url_part_two + '1')
-        # self.start_urls = [self.url_part_one + '1731502203' + self.url_part_two + '2']
-        print len(self.total_uids)
 
     # 根据start_urls生成最初的url请求
     def start_requests(self):
@@ -76,119 +61,111 @@ class StatusSpider(Spider):
     # 处理爬取到的页面
     def parse_page(self, response):
         logging.info("parse : " + response.url)
-        if response.status == '403':
-            yield Request(response.url,
-                          meta={'maxPage': response.meta['maxPage'],
-                                'nowPage': response.meta['nowPage'],
-                                'uIndex': response.meta['uIndex'],
-                                'status': '403'}, dont_filter=True, callback=self.parse_page)
-        else:
-            render_data = json.loads(response.body)
 
-            if response.meta['maxPage'] == -1:
-                # 第一次进来时需要设置maxPage
-                # mod/empty表示没有内容
-                if render_data['cards'][0]['mod_type'] == 'mod/empty':
-                    maxPage = -1
-                elif 'maxPage' in render_data['cards'][0]:
-                    maxPage = render_data['cards'][0]['maxPage']
-                else:
-                    maxPage = -1
+        render_data = json.loads(response.body)
+        if response.meta['maxPage'] == -1:
+            # 第一次进来时需要设置maxPage
+            # mod/empty表示没有内容
+            if render_data['cards'][0]['mod_type'] == 'mod/empty':
+                maxPage = -1
+            elif 'maxPage' in render_data['cards'][0]:
+                maxPage = render_data['cards'][0]['maxPage']
             else:
-                maxPage = response.meta['maxPage']
+                maxPage = -1
+        else:
+            maxPage = response.meta['maxPage']
 
-            # mod/pagelist表示当前页有微博内容
-            if render_data['cards'][0]['mod_type'] == 'mod/pagelist':
-                item = SinaStatusItem()  # 微博内容
-                self.init_item(item)
+        # mod/pagelist表示当前页有微博内容
+        if render_data['cards'][0]['mod_type'] == 'mod/pagelist':
+            item = SinaStatusItem()  # 微博内容
+            self.init_item(item)
 
-                jItem = SinaAllJsonItem()  # 微博所有json内容
-                jItem['uid'] = []
-                jItem['allJson'] = []
+            jItem = SinaAllJsonItem()  # 微博所有json内容
+            jItem['uid'] = []
+            jItem['allJson'] = []
 
-                for status in render_data['cards'][0]['card_group']:
-                    mblog = status['mblog']
-                    if 'retweeted_status' in mblog.keys():
-                        # 如果有原微博，那么也要保存下来
-                        if 'deleted' in mblog['retweeted_status']:
-                            dItem = SinaStatusItem()  # 被删除的微博内容
-                            self.init_item(dItem)
-                            self.fill_dItem(dItem,mblog['retweeted_status'])
-                            yield dItem
-                        else:
-                            reItem = SinaStatusItem()
-                            self.init_item(reItem)
-                            self.fill_item(reItem, mblog['retweeted_status'])
-                            yield reItem
-                            # 把整个json保存下来
-                            if mblog['retweeted_status']['user']['id']:
-                                jItem['uid'].append(mblog['retweeted_status']['user']['id'])
-                            else:
-                                jItem['uid'].append('0')
-                            jItem['allJson'].append(mblog['retweeted_status'])
-
-                            # 并且原微博的作者也要保存
-                            uItem = SinaUserItem()  # 原微博的作者
-                            self.fill_uItem(uItem, mblog['retweeted_status']['user'])
-                            yield uItem
-
-                    # 当前用户的微博
-                    if 'deleted' in mblog:
-                        dItem = SinaStatusItem()
+            for status in render_data['cards'][0]['card_group']:
+                mblog = status['mblog']
+                if 'retweeted_status' in mblog.keys():
+                    # 如果有原微博，那么也要保存下来
+                    if 'deleted' in mblog['retweeted_status']:
+                        dItem = SinaStatusItem()  # 被删除的微博内容
                         self.init_item(dItem)
-                        self.fill_dItem(dItem,mblog)
+                        self.fill_dItem(dItem,mblog['retweeted_status'])
                         yield dItem
                     else:
-                        self.fill_item(item, mblog)
+                        reItem = SinaStatusItem()
+                        self.init_item(reItem)
+                        self.fill_item(reItem, mblog['retweeted_status'])
+                        yield reItem
+
                         # 把整个json保存下来
-                        if mblog['user']['id']:
-                            jItem['uid'].append(mblog['user']['id'])
+                        if mblog['retweeted_status']['user']['id']:
+                            jItem['uid'].append(mblog['retweeted_status']['user']['id'])
                         else:
                             jItem['uid'].append('0')
-                        jItem['allJson'].append(mblog)
+                        jItem['allJson'].append(mblog['retweeted_status'])
 
-                yield item
-                yield jItem
+                        # 并且原微博的作者也要保存
+                        uItem = SinaUserItem()  # 原微博的作者
+                        self.fill_uItem(uItem, mblog['retweeted_status']['user'])
+                        yield uItem
 
-            # 生成新的request
-            nowPage = response.meta['nowPage']
-            uIndex = response.meta['uIndex']
-            if nowPage >= maxPage:
-                # nowPage >= maxPage的话说明这个用户的微博已经爬完了
+                # 当前用户的微博
+                if 'deleted' in mblog:
+                    dItem = SinaStatusItem()
+                    self.init_item(dItem)
+                    self.fill_dItem(dItem,mblog)
+                    yield dItem
+                else:
+                    self.fill_item(item, mblog)
+                    # 把整个json保存下来
+                    if mblog['user']['id']:
+                        jItem['uid'].append(mblog['user']['id'])
+                    else:
+                        jItem['uid'].append('0')
+                    jItem['allJson'].append(mblog)
+
+            yield item
+            yield jItem
+
+        # 生成新的request
+        nowPage = response.meta['nowPage']
+        uIndex = response.meta['uIndex']
+        if nowPage >= maxPage:  # nowPage >= maxPage的话说明这个用户的微博已经爬完了
+
 #                 fItem = SinaFlagItem()
 #                 fItem['uid'] = self.total_uids[uIndex]
 #                 fItem['wblog_flag'] = '1'
 #                 yield fItem
 
-                cur = self.conn.get_cur('sina')
-                update_sql = 'update scra_flags_0 set wblog_flag = 1 where uid = %s' %self.total_uids[uIndex]
-                cur.execute(update_sql)
-                self.conn.commit()
-                cur.close()
-                # 如果self.total_uids里面有新的uid的话，那就爬新的用户的微博
-                if uIndex < len(self.total_uids) - 1:
-                    uIndex += 1
-#                     yield Request(self.url_part_one + str(self.total_uids[uIndex]) + self.url_part_two + '1',
-#                                    meta={'maxPage': -1, 'nowPage': 1, 'uIndex': uIndex}, callback=self.parse_page)
-                else:
-                    #内存中用户列表爬完，从数据库中重新获取
-                    self.total_uids = self.get_pre_user_list(100)
-                    #重置uIndex
-                    uIndex = 0
-
-                yield Request(self.url_part_one + str(self.total_uids[uIndex]) + self.url_part_two + '1',
-                                   meta={'maxPage': -1, 'nowPage': 1, 'uIndex': uIndex}, callback=self.parse_page)
+            cur = self.conn.get_cur('sina')
+            update_sql = 'update scra_flags_0 set wblog_flag = 1 where uid = %s' %self.total_uids[uIndex]
+            cur.execute(update_sql)
+            self.conn.commit()
+            cur.close()
+            # 如果self.total_uids里面有新的uid的话，那就爬新的用户的微博
+            if uIndex < len(self.total_uids) - 1:
+                uIndex += 1
             else:
-                cur = self.conn.get_cur('sina')
-                update_sql = 'update uid_weibo set uid = %s,currentPage=%s,maxPage=%s where id = 1' %(self.total_uids[uIndex],nowPage,maxPage)
-                cur.execute(update_sql)
-                self.conn.commit()
-                cur.close()
-                logging.info('------------------------------')
-                # 否则就爬下一页的微博
-                yield Request(self.url_part_one + str(self.total_uids[uIndex]) + self.url_part_two + str(int(nowPage) + 1),
-                               meta={'maxPage': maxPage, 'nowPage': int(nowPage) + 1, 'uIndex': uIndex},
-                               callback=self.parse_page)
+                #内存中用户列表爬完，从数据库中重新获取
+                self.total_uids = self.get_pre_user_list(100)
+                #重置uIndex
+                uIndex = 0
+
+            yield Request(self.url_part_one + str(self.total_uids[uIndex]) + self.url_part_two + '1',
+                               meta={'maxPage': -1, 'nowPage': 1, 'uIndex': uIndex}, callback=self.parse_page)
+        else:  #当前用户的微博还没爬完,爬下一页的微博
+            cur = self.conn.get_cur('sina')
+            update_sql = 'update uid_weibo set uid = %s,currentPage=%s,maxPage=%s where id = 1' %(self.total_uids[uIndex],nowPage,maxPage)
+            cur.execute(update_sql)
+            self.conn.commit()
+            cur.close()
+            logging.info('------------------------------')
+            # 下一页的微博
+            yield Request(self.url_part_one + str(self.total_uids[uIndex]) + self.url_part_two + str(int(nowPage) + 1),
+                           meta={'maxPage': maxPage, 'nowPage': int(nowPage) + 1, 'uIndex': uIndex},
+                           callback=self.parse_page)
 
     # 初始化item
     def init_item(self, item):

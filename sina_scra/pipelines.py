@@ -62,30 +62,18 @@ class SinaScraPipeline(object):
 
 class StatusPipeline(object):
     def __init__(self):
-        self.dbpool = adbapi.ConnectionPool('MySQLdb',
-                                            host='223.3.94.145',
-                                            db='sina',
-                                            user='root',
-                                            passwd='root@123',
-                                            cursorclass=MySQLdb.cursors.DictCursor,
-                                            charset='utf8',
-                                            use_unicode=True)
+        self.dbpool = dbManager().get_dbpool()
 
     def process_item(self, item, spider):
         if 'insert_time' in item.keys():
              self.dbpool.runInteraction(self.ui_insert, item)
-            # query = self.dbpool.runInteraction(self.ui_insert, item)
-            # query.addErrback(self.handle_error)
-#             pass
 #         elif 'wblog_flag' in item.keys():
 #             query = self.dbpool.runInteraction(self.sf_update, item)
 #             query.addErrback(self.handle_error)
 #             pass
         elif 'allJson' not in item.keys():
             self.dbpool.runInteraction(self.wblog_insert, item)
-            # query = self.dbpool.runInteraction(self.wblog_insert, item)
-            # query.addErrback(self.handle_error)
-#             pass
+
         return item
 
     # 插入新用户
@@ -112,8 +100,7 @@ class StatusPipeline(object):
         except MySQLdb.Error, e:
             logging.info("uf_insert:%s" % str(e))
         except Exception as e:
-            logging.error('error in ui_insert, the item is:\n')
-            print item
+            logging.error('error in ui_insert, the item is%s\n'%str(item))
             logging.error(e)
 
     # 更新scra_flags表
@@ -161,39 +148,20 @@ class StatusPipeline(object):
         except MySQLdb.Error, e:
             logging.info("uf_insert:%s" % str(e))
         except Exception as e:
-            logging.error('error in wblog_insert, the item is:\n')
-            print item
+            logging.error('error in wblog_insert, the item is:%s\n'%str(item))
             logging.error(e)
 
 
 class CommentPipeline(object):
     def __init__(self):
-        self.dbpool1 = adbapi.ConnectionPool('MySQLdb',
-                                            host='223.3.94.145',
-                                            db='sina',
-                                            user='root',
-                                            passwd='root@123',
-                                            cursorclass=MySQLdb.cursors.DictCursor,
-                                            charset='utf8',
-                                            use_unicode=True)
-        self.dbpool2 = adbapi.ConnectionPool('MySQLdb',
-                                            host='223.3.94.145',
-                                            db='sina_comment',
-                                            user='root',
-                                            passwd='root@123',
-                                            cursorclass=MySQLdb.cursors.DictCursor,
-                                            charset='utf8',
-                                            use_unicode=True)
+        # self.dbpool1 = dbManager().get_dbpool()
+        self.dbpool = dbManager(my_db='sina_comment').get_dbpool()
 
     def process_item(self, item, spider):
-        if 'comment_flag' in item.keys():
-            self.dbpool1.runInteraction(self.wblog_update, item)
-            # query = self.dbpool1.runInteraction(self.wblog_update, item)
-            # query.addErrback(self.handle_error)
-        else:
-            self.dbpool2.runInteraction(self.comment_insert, item)
-            # query = self.dbpool2.runInteraction(self.comment_insert, item)
-            # query.addErrback(self.handle_error)
+        # if 'comment_flag' in item.keys():
+        #     self.dbpool1.runInteraction(self.wblog_update, item)
+        # else:
+        self.dbpool.runInteraction(self.comment_insert, item)
         return item
         # raise DropItem("nothing")
 
@@ -219,40 +187,29 @@ class CommentPipeline(object):
         except MySQLdb.Error, e:
             logging.info("uf_insert:%s" % str(e))
         except Exception as e:
-            logging.error('error in comment_insert, the item is:\n')
-            print item
+            logging.error('error in comment_insert, the item is:%s\n'%str(item))
             logging.error(e)
 
     # 更新wblog表
-    def wblog_update(self, cur, item):
-        which_table = str(long(item['uid']) % 1000)
-        sql = 'UPDATE wblog_' + which_table + ' SET comment_flag=' + item['comment_flag'] + ' WHERE mid=' + str(item['mid'])
-        try:
-            cur.execute(sql)
-        except MySQLdb.Error, e:
-            logging.info("sf_update:%s" % str(e))
-        except Exception as e:
-            logging.error('error in wblog_update, the item is:\n')
-            print item
-            logging.error(e)
+    # def wblog_update(self, cur, item):
+    #     which_table = str(long(item['uid']) % 1000)
+    #     sql = 'UPDATE wblog_' + which_table + ' SET comment_flag=' + item['comment_flag'] + ' WHERE mid=' + str(item['mid'])
+    #     try:
+    #         cur.execute(sql)
+    #     except MySQLdb.Error, e:
+    #         logging.info("sf_update:%s" % str(e))
+    #     except Exception as e:
+    #         logging.error('error in wblog_update, the item is:%s\n'%str(item))
+    #         logging.error(e)
 
 
 class StatusJsonPipeline(object):
     def __init__(self):
-        self.dbpool = adbapi.ConnectionPool('MySQLdb',
-                                            host='223.3.94.145',
-                                            db='sina_wblog_json',
-                                            user='root',
-                                            passwd='root@123',
-                                            cursorclass=MySQLdb.cursors.DictCursor,
-                                            charset='utf8',
-                                            use_unicode=True)
+        self.dbpool = dbManager(my_db='sina_wblog_json').get_dbpool()
 
     def process_item(self, item, spider):
         if 'allJson' in item.keys():
             self.dbpool.runInteraction(self.wblog_json_insert, item)
-            # query = self.dbpool.runInteraction(self.wblog_json_insert, item)
-            # query.addErrback(self.handle_error)
         else:
             pass
         return item
@@ -268,6 +225,5 @@ class StatusJsonPipeline(object):
         except MySQLdb.Error, e:
             logging.info("wblog_json_insert:%s" % str(e))
         except Exception as e:
-            logging.error('error in wblog_json_insert, the item is:\n')
-            print item
+            logging.error('error in wblog_json_insert, the item is:%s\n'%str(item))
             logging.error(e)
