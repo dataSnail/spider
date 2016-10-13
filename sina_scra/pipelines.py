@@ -8,11 +8,11 @@ import MySQLdb
 from twisted.enterprise import adbapi
 
 class SinaScraPipeline(object):
-    
+
     def __init__(self):
         self.dbpool = dbManager().get_dbpool()
-    
-    
+
+
     def process_item(self, item, spider):
 #         print '-----------pipline------------'
         if 'fid' in item:
@@ -20,7 +20,7 @@ class SinaScraPipeline(object):
         if 'scree_name' in item:
             self.dbpool.runInteraction(self._userInfo_insert,item)
         return item
-    
+
 #     def _conditional_insert(self,tx,item):
 #         values = []
 #         for i in range(len(item['uid'])):
@@ -43,8 +43,8 @@ class SinaScraPipeline(object):
         except Exception as e:
             logging.error('DBError---->uidList::'+str(item['uid'][0])+' and fidList::'+str(item['fid'])+'did not insert into table')
             logging.error(e)
-            
-            
+
+
     def _userInfo_insert(self,cur,uItem):
         tableLs = []
         try:
@@ -52,14 +52,14 @@ class SinaScraPipeline(object):
                 tableLs.append(str(thash().uhash(uItem['uid'][i],200)))
                 user_info_sql = 'insert ignore into userinfo_'+str(thash().uhash(uItem['uid'][i],200))+'(uid,screen_name,profile_image_url,statuses_count,verified,verified_reason,description,verified_type,gender,mbtype,ismember,fansNum,insert_time) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())'
                 user_info_tuple =(uItem['uid'][i],uItem['scree_name'][i],uItem['profile_img_url'][i],uItem['status_count'][i],uItem['verified'][i],uItem['verified_reason'][i],\
-                uItem['description'][i],uItem['verified_type'][i],uItem['gender'][i],uItem['mbtype'][i],uItem['ismember'][i],uItem['fansNum'][i]) 
+                uItem['description'][i],uItem['verified_type'][i],uItem['gender'][i],uItem['mbtype'][i],uItem['ismember'][i],uItem['fansNum'][i])
                 cur.execute(user_info_sql,user_info_tuple)
-            logging.info('tables'+','.join(tableLs)+' is inserting.....') 
+            logging.info('tables'+','.join(tableLs)+' is inserting.....')
         except Exception as e:
             logging.error('DBError---->userInfo::'+str(uItem['uid'])+' did not insert into table'+','.join(tableLs))
             logging.error(e)
-            
-            
+
+
 class StatusPipeline(object):
     def __init__(self):
         self.dbpool = adbapi.ConnectionPool('MySQLdb',
@@ -73,20 +73,20 @@ class StatusPipeline(object):
 
     def process_item(self, item, spider):
         if 'insert_time' in item.keys():
-            query = self.dbpool.runInteraction(self.ui_insert, item)
-            query.addErrback(self.handle_error)
+             self.dbpool.runInteraction(self.ui_insert, item)
+            # query = self.dbpool.runInteraction(self.ui_insert, item)
+            # query.addErrback(self.handle_error)
 #             pass
 #         elif 'wblog_flag' in item.keys():
 #             query = self.dbpool.runInteraction(self.sf_update, item)
 #             query.addErrback(self.handle_error)
 #             pass
         elif 'allJson' not in item.keys():
-            query = self.dbpool.runInteraction(self.wblog_insert, item)
-            query.addErrback(self.handle_error)
+            self.dbpool.runInteraction(self.wblog_insert, item)
+            # query = self.dbpool.runInteraction(self.wblog_insert, item)
+            # query.addErrback(self.handle_error)
 #             pass
-
         return item
-        # raise DropItem("nothing")
 
     # 插入新用户
     def ui_insert(self, cur, item):
@@ -111,6 +111,10 @@ class StatusPipeline(object):
                 item['description'], item['verified_type'], item['insert_time']))
         except MySQLdb.Error, e:
             logging.info("uf_insert:%s" % str(e))
+        except Exception as e:
+            logging.error('error in ui_insert, the item is:\n')
+            print item
+            logging.error(e)
 
     # 更新scra_flags表
 #     def sf_update(self, cur, item):
@@ -124,7 +128,6 @@ class StatusPipeline(object):
     # 插入微博
     def wblog_insert(self, cur, item):
         which_table = str(long(item['uid'][0]) % 1000)
-        # which_table = '0'
         sql = 'INSERT IGNORE INTO wblog_' + which_table + ' (uid, ' \
                                                   'mid, ' \
                                                   'bid, ' \
@@ -157,11 +160,10 @@ class StatusPipeline(object):
                              item['crawl_timestamp'], comment_flag))
         except MySQLdb.Error, e:
             logging.info("uf_insert:%s" % str(e))
-
-    def handle_error(self, e):
-        logging.info('process_item error')
-        logging.error(e)
-        pass
+        except Exception as e:
+            logging.error('error in wblog_insert, the item is:\n')
+            print item
+            logging.error(e)
 
 
 class CommentPipeline(object):
@@ -185,11 +187,13 @@ class CommentPipeline(object):
 
     def process_item(self, item, spider):
         if 'comment_flag' in item.keys():
-            query = self.dbpool1.runInteraction(self.wblog_update, item)
-            query.addErrback(self.handle_error)
+            self.dbpool1.runInteraction(self.wblog_update, item)
+            # query = self.dbpool1.runInteraction(self.wblog_update, item)
+            # query.addErrback(self.handle_error)
         else:
-            query = self.dbpool2.runInteraction(self.comment_insert, item)
-            query.addErrback(self.handle_error)
+            self.dbpool2.runInteraction(self.comment_insert, item)
+            # query = self.dbpool2.runInteraction(self.comment_insert, item)
+            # query.addErrback(self.handle_error)
         return item
         # raise DropItem("nothing")
 
@@ -214,6 +218,10 @@ class CommentPipeline(object):
                              item['crawl_timestamp']))
         except MySQLdb.Error, e:
             logging.info("uf_insert:%s" % str(e))
+        except Exception as e:
+            logging.error('error in comment_insert, the item is:\n')
+            print item
+            logging.error(e)
 
     # 更新wblog表
     def wblog_update(self, cur, item):
@@ -223,11 +231,11 @@ class CommentPipeline(object):
             cur.execute(sql)
         except MySQLdb.Error, e:
             logging.info("sf_update:%s" % str(e))
+        except Exception as e:
+            logging.error('error in wblog_update, the item is:\n')
+            print item
+            logging.error(e)
 
-    def handle_error(self, e):
-        logging.info('process_item error')
-        logging.error(e)
-        pass
 
 class StatusJsonPipeline(object):
     def __init__(self):
@@ -242,8 +250,9 @@ class StatusJsonPipeline(object):
 
     def process_item(self, item, spider):
         if 'allJson' in item.keys():
-            query = self.dbpool.runInteraction(self.wblog_json_insert, item)
-            query.addErrback(self.handle_error)
+            self.dbpool.runInteraction(self.wblog_json_insert, item)
+            # query = self.dbpool.runInteraction(self.wblog_json_insert, item)
+            # query.addErrback(self.handle_error)
         else:
             pass
         return item
@@ -251,7 +260,6 @@ class StatusJsonPipeline(object):
     # 插入微博
     def wblog_json_insert(self, cur, item):
         which_table = str(long(item['uid'][0]) % 1000)
-        # which_table = '0'
         sql = 'INSERT IGNORE INTO wblog_json_' + which_table + ' (mid, json_text) VALUES (%s,%s)'
         try:
             cur.execute('SET CHARSET utf8mb4')
@@ -259,8 +267,7 @@ class StatusJsonPipeline(object):
                 cur.execute(sql,(item['uid'][i], str(item['allJson'][i])))
         except MySQLdb.Error, e:
             logging.info("wblog_json_insert:%s" % str(e))
-
-    def handle_error(self, e):
-        logging.info('process_item error')
-        logging.error(e)
-        pass
+        except Exception as e:
+            logging.error('error in wblog_json_insert, the item is:\n')
+            print item
+            logging.error(e)

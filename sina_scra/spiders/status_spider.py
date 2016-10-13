@@ -287,17 +287,29 @@ class StatusSpider(Spider):
         # 用户id
         item['uid'].append('0')
         # 微博id
-        item['mid'].append(mblog['mid'])
+        if mblog['mid']:
+            item['mid'].append(mblog['mid'])
+        else:
+            item['mid'].append('0')
         # 微博短id
-        item['bid'].append(mblog['bid'])
+        if mblog['bid']:
+            item['bid'].append(mblog['bid'])
+        else:
+            item['bid'].append('0')
         # 原微博id
         item['retweeted_mid'].append('0')
         # 微博内容
-        item['text'].append(mblog['text'])
+        if mblog['text']:
+            item['text'].append(mblog['text'])
+        else:
+            item['text'].append('0')
         # 是否是长微博
         item['isLongText'].append('0')
         # 微博来源
-        item['source'].append(mblog['source'])
+        if mblog['source']:
+            item['source'].append(mblog['source'])
+        else:
+            item['source'].append('0')
         # 转发数
         item['reposts_count'].append('0')
         # 评论数
@@ -313,25 +325,25 @@ class StatusSpider(Spider):
         # 是否含有外链，可能是其他网站，也可能是一个视频
         item['hasOutlink'].append('0')
         # 发微博的时间
-        item['created_timestamp'].append(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mblog['created_timestamp'])))
+        if mblog['created_timestamp']:
+            item['created_timestamp'].append(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mblog['created_timestamp'])))
+        else:
+            item['created_timestamp'].append(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
 
     # 填写uItem
     def fill_uItem(self, uItem, user):
-        if user['id']:
-            uItem['uid'] = user['id']
-        else:
-            uItem['uid'] = '0'
-        uItem['screen_name'] = user['screen_name']
-        uItem['profile_image_url'] = user['profile_image_url']
-        uItem['statuses_count'] = user['statuses_count']
-        uItem['verified'] = user['verified']
-        uItem['verified_reason'] = user['verified_reason']
-        uItem['gender'] = user['gender']
-        uItem['mbtype'] = user['mbtype']
-        uItem['ismember'] = user['ismember']
-        uItem['fansNum'] = user['fansNum']
-        uItem['description'] = user['description']
-        uItem['verified_type'] = user['verified_type']
+        uItem['uid'] = user['id'] if user['id'] else '0'
+        uItem['screen_name'] = user['screen_name'] if user['screen_name'] else '0'
+        uItem['profile_image_url'] = user['profile_image_url'] if user['profile_image_url'] else '0'
+        uItem['statuses_count'] = user['statuses_count'] if user['statuses_count'] else '0'
+        uItem['verified'] = user['verified'] if user['verified'] else '0'
+        uItem['verified_reason'] = user['verified_reason'] if user['verified_reason'] else '0'
+        uItem['gender'] = user['gender'] if user['gender'] else '0'
+        uItem['mbtype'] = user['mbtype'] if user['mbtype'] else '0'
+        uItem['ismember'] = user['ismember'] if user['ismember'] else '0'
+        uItem['fansNum'] = user['fansNum'] if user['fansNum'] else '0'
+        uItem['description'] = user['description'] if user['description'] else '0'
+        uItem['verified_type'] = user['verified_type'] if user['verified_type'] else '0'
         uItem['insert_time'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
 
     #从数据库获得num个用户列表
