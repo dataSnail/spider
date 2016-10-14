@@ -23,7 +23,11 @@ class UserRelationSpider(Spider):
     conn = dbManager2()
     
     pre_user_count = 1
-    
+    custom_settings={
+                     'ITEM_PIPELINES' : {
+                                            'sina_scra.pipelines.SinaScraPipeline': 300,
+                                        }
+                     }
     user_current_index = 0
     def __init__(self):
         print '-----__init__--------'

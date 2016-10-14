@@ -10,7 +10,7 @@ import MySQLdb.cursors
 class dbManager():
 
     def __init__(self, my_db='sina'):
-        self.dbpool = adbapi.ConnectionPool('MySQLdb',
+        self.__dbpool = adbapi.ConnectionPool('MySQLdb',
                                             host = '223.3.94.145',
                                             db = my_db,
                                             user = 'root',
@@ -19,4 +19,4 @@ class dbManager():
                                             charset = 'utf8',
                                             use_unicode = True)
     def get_dbpool(self):
-        return self.dbpool
+        return self.__dbpool

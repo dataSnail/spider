@@ -9,6 +9,7 @@ import random
 import logging
 from sina_scra.utils.dbManager2 import dbManager2
 import base64
+from time import sleep
 
 class UserAgentMiddleware(object):
     def process_request(self,request,spider):
@@ -105,6 +106,10 @@ class aBuProxyMiddleware(object):
         logging.info('url : '+str(request.url)+' ,status:'+str(response.status))
         if response.status != 200:
 #             self.last_url = request.url
+            #代理429错误，请求数量超过限制
+            if response.status == 429:
+                sleep(5)
+                logging.warn('too many request sleep for 5 seconds-------------------------------------------------->429')
             #等待
             request.meta['proxy'] = self.proxyServer
             request.headers["Proxy-Authorization"] = self.proxyAuth       
@@ -120,7 +125,7 @@ class aBuProxyMiddleware(object):
         return response
         
     def process_exception(self,request,exception,spider):
-        logging.info('process_exception ......................')
+        logging.info('process_exception in aBuProxyMiddleware changin proxy---------------------------------------<<<')
 #         self.last_url = request.url
         #等待
         request.meta['proxy'] = self.proxyServer
