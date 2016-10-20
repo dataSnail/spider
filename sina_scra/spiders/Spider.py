@@ -4,7 +4,7 @@ Created on 2016年10月3日
 
 @author: MQ
 '''
-from scrapy.spiders import Spider
+from sina_scra.scrapy_redis_seu.spiders import RedisSpider
 from scrapy import Request
 import json
 from sina_scra.items import UserRelationItem
@@ -15,9 +15,10 @@ import re
 import time
 import logging
 
-class UserRelationSpider(Spider):
+class UserRelationSpider(RedisSpider):
     name = 'user_relation'
-    allowed_domains = ['weibo.cn']
+    redis_key = 'frelation:start_urls'
+#     allowed_domains = ['weibo.cn']
     start_urls = []
     user_list = []
     conn = dbManager2()
@@ -29,12 +30,89 @@ class UserRelationSpider(Spider):
                                         }
                      }
     user_current_index = 0
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         print '-----__init__--------'
+        super(UserRelationSpider, self).__init__(*args, **kwargs)
+        
+    #redis 爬取
+    def parse(self,response):
+        print '-----parse--------'
+        try:
+            #获取返回json数据
+            json_data = json.loads(response.body)
+        except Exception as e:
+            #重新请求
+            logging.error('\n----------url error----------\n%s\n----------url error---------\njson data is error and the Exception e is ========>%s'%(response.url,str(e)))
+#             time.sleep(5)
+            #重新请求 ,返回到redis里面，设置优先级
+            yield Request(response.url,meta={'dont_redirect': True},dont_filter=True,callback=self.parse)
+        else:
+            item = UserRelationItem()
+            extract_uid = re.findall("100505(.+)_-_FOLLOWERS",response.url)
+            extract_page = re.findall("page=(.+)",response.url)
+            if len(extract_uid)!=1:
+                logging.error('\n----------extract_uid %s error----------%s----------'%(extract_uid,response.url))
+            else:
+                logging.info('----------------------------------------uid,page=%s,%s'%(extract_uid[0],extract_page[0]))
+                item['uid'] = extract_uid
+                followerLs = []
+                uItem = UserInfoItem()
+                #封装关注列表
+                uidLs = []
+                screenNameLs = []
+                profileImgUrlLs = []
+                statusCountLs = []
+                verifiedLs = []
+                verifiedReasonLs = []
+                verifiedTypeLs = []
+                genderLs = []
+                mbtypeLs = []
+                ismemberLs = []
+                fansNumLs = []
+                descriptionLs = []
+                 
+                if json_data['count'] == None or json_data['count'] == 0 or str(json_data['count'])=='':
+                    logging.info('user'+str(item['uid'])+'does not follow anyone or '+str(response.url)+'have no information--------------------!!!!!!!')
+                else:
+                    for card in json_data['cards'][0]['card_group']:
+            #             userLs.append(str(self.user_list[self.user_current_index]))
+                        followerLs.append(card['user']['id'])
+                         
+                        uidLs.append(str(card['user']['id']))
+                        screenNameLs.append(card['user']['screen_name'])
+                        profileImgUrlLs.append(card['user']['profile_image_url'])
+                        statusCountLs.append(card['user']['statuses_count'])
+                        verifiedLs.append(card['user']['verified'])
+                        verifiedReasonLs.append(card['user']['verified_reason'])
+                        descriptionLs.append("".join(re.findall(ur"[\u4e00-\u9fa5a-z0-9]+", card['user']['description'])))
+                        verifiedTypeLs.append(card['user']['verified_type'])
+                        genderLs.append(card['user']['gender'])
+                        mbtypeLs.append(card['user']['mbtype'])
+                        ismemberLs.append(card['user']['ismember'])
+                        fansNumLs.append(card['user']['fansNum'])
+                         
+                         
+                    uItem['uid'] = uidLs
+                    uItem['scree_name'] = screenNameLs
+                    uItem['profile_img_url'] = profileImgUrlLs
+                    uItem['status_count'] = statusCountLs
+                    uItem['verified'] = verifiedLs
+                    uItem['verified_reason'] = verifiedReasonLs
+                    uItem['gender'] = genderLs
+                    uItem['mbtype'] = mbtypeLs
+                    uItem['ismember'] = ismemberLs
+                    uItem['fansNum'] = fansNumLs
+                    uItem['description'] = descriptionLs
+                    uItem['verified_type'] = verifiedTypeLs
+                     
+                      
+                    item['fid'] = followerLs
+            #         item.extend([Request(url,callback=self.parse_page) for url in urls])
+                    yield item
+                    yield uItem
+        
     
-    
-    
-    def start_requests(self):
+    def start_requests_bak(self):
 #         print '-----start_requests--------'
         #开始的第一个id
         start_id = self.get_pre_user_list()
@@ -48,7 +126,7 @@ class UserRelationSpider(Spider):
 #     def error_function(self,response):
 #         print response.url
     
-    def parse_page(self, response):
+    def parse_page_bak(self, response):
 #         print '-----parse--------'
         try:
             #获取返回json数据
@@ -164,33 +242,33 @@ class UserRelationSpider(Spider):
         return pre_user_list
     
     
-    def fill_userinfoItem(self,card):
-        uidLs = []
-        screenNameLs = []
-        profileImgUrlLs = []
-        statusCountLs = []
-        verifiedLs = []
-        verifiedReasonLs = []
-        verifiedTypeLs = []
-        genderLs = []
-        mbtypeLs = []
-        ismemberLs = []
-        fansNumLs = []
-        
-        uidLs.append(str(card['user']['id']))
-        screenNameLs.append(card['user']['screen_name'])
-        profileImgUrlLs.append(card['user']['profile_image_url'])
-        statusCountLs.append(card['user']['statuses_count'])
-        verifiedLs.append(card['user']['verified'])
-        verifiedReasonLs.append(card['user']['verified_reason'])
-        genderLs.append("".join(re.findall(ur"[\u4e00-\u9fa5a-z0-9]+", card['user']['description'])))
-        verifiedTypeLs.append(card['user']['verified_type'])
-        genderLs.append(card['user']['gender'])
-        mbtypeLs.append(card['user']['mbtype'])
-        ismemberLs.append(card['user']['ismember'])
-        fansNumLs.append(card['user']['fansNum'])
-        
-        return None
+#     def fill_userinfoItem(self,card):
+#         uidLs = []
+#         screenNameLs = []
+#         profileImgUrlLs = []
+#         statusCountLs = []
+#         verifiedLs = []
+#         verifiedReasonLs = []
+#         verifiedTypeLs = []
+#         genderLs = []
+#         mbtypeLs = []
+#         ismemberLs = []
+#         fansNumLs = []
+#         
+#         uidLs.append(str(card['user']['id']))
+#         screenNameLs.append(card['user']['screen_name'])
+#         profileImgUrlLs.append(card['user']['profile_image_url'])
+#         statusCountLs.append(card['user']['statuses_count'])
+#         verifiedLs.append(card['user']['verified'])
+#         verifiedReasonLs.append(card['user']['verified_reason'])
+#         genderLs.append("".join(re.findall(ur"[\u4e00-\u9fa5a-z0-9]+", card['user']['description'])))
+#         verifiedTypeLs.append(card['user']['verified_type'])
+#         genderLs.append(card['user']['gender'])
+#         mbtypeLs.append(card['user']['mbtype'])
+#         ismemberLs.append(card['user']['ismember'])
+#         fansNumLs.append(card['user']['fansNum'])
+#         
+#         return None
     @staticmethod
     def close(spider, reason):
         logging.error('Spider closed ==========================================>'+str(reason))

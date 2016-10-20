@@ -39,7 +39,7 @@ class SinaScraPipeline(object):
                 s_sql = 'insert ignore into scra_flags_0 (uid) values(%s)'
                 tx.execute(f_sql,(item['uid'][0],item['fid'][i]))
                 tx.execute(s_sql,(item['fid'][i],))
-            logging.info('tables'+str(tableId)+' is inserting.....')
+            logging.info('frelation_'+str(tableId)+' is inserting.....|||||')
         except Exception as e:
             logging.error('DBError---->uidList::'+str(item['uid'][0])+' and fidList::'+str(item['fid'])+'did not insert into table')
             logging.error(e)
@@ -54,7 +54,7 @@ class SinaScraPipeline(object):
                 user_info_tuple =(uItem['uid'][i],uItem['scree_name'][i],uItem['profile_img_url'][i],uItem['status_count'][i],uItem['verified'][i],uItem['verified_reason'][i],\
                 uItem['description'][i],uItem['verified_type'][i],uItem['gender'][i],uItem['mbtype'][i],uItem['ismember'][i],uItem['fansNum'][i])
                 cur.execute(user_info_sql,user_info_tuple)
-            logging.info('tables'+','.join(tableLs)+' is inserting.....')
+            logging.info('userinfo_'+','.join(tableLs)+' is inserting.....|||||')
         except Exception as e:
             logging.error('DBError---->userInfo::'+str(uItem['uid'])+' did not insert into table'+','.join(tableLs))
             logging.error(e)

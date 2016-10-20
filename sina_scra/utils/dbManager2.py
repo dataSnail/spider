@@ -8,7 +8,7 @@ import MySQLdb
 import logging
 
 class dbManager2():
-    def __init__(self,host='223.3.94.145',user='root',passwd='root@123',port=3306,charset='utf8'):
+    def __init__(self,host='223.3.75.180',user='root',passwd='root@123',port=3306,charset='utf8'):
         self.host = host
         self.user = user
         self.passwd = passwd

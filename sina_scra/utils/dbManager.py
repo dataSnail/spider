@@ -11,7 +11,7 @@ class dbManager():
 
     def __init__(self, my_db='sina'):
         self.__dbpool = adbapi.ConnectionPool('MySQLdb',
-                                            host = '223.3.94.145',
+                                            host = '223.3.75.180',
                                             db = my_db,
                                             user = 'root',
                                             passwd = 'root@123',
