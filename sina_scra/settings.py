@@ -68,8 +68,8 @@ DOWNLOADER_MIDDLEWARES = {
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
 #     'sina_scra.pipelines.SinaScraPipeline': 300,
-#     'sina_scra.pipelines.StatusPipeline': 300,
-#     'sina_scra.pipelines.StatusJsonPipeline': 301,
+#     'sina_scra.pipelines.WblogPipeline': 300,
+#     'sina_scra.pipelines.WblogJsonPipeline': 301,
 #     'sina_scra.pipelines.CommentPipeline': 300,
 }
 
@@ -108,4 +108,3 @@ SCHEDULER_QUEUE_CLASS = 'sina_scra.scrapy_redis_seu.queue.SpiderPriorityQueue'
 REDIS_HOST = '223.3.94.145'
 REDIS_PORT = '6379'
 REDIS_URL = 'redis://:redis123@223.3.94.145:6379'
-

@@ -2,6 +2,7 @@
 
 # 爬取新浪用户的所有微博，顺便记录下用户信息
 
+from sina_scra.scrapy_redis_seu.spiders import RedisSpider
 from scrapy import Request
 from scrapy.spiders import Spider
 
@@ -18,13 +19,14 @@ from sina_scra.utils.dbManager2 import dbManager2
 
 
 class CommentSpider(RedisSpider):
-    name = "sina_comment"  # 爬虫名称
-    allowed_domain = [""]  # 访问的url的域名
+    name = 'sina_comment'  # 爬虫名称
+    allowed_domain = ['weibo.cn']  # 访问的url的域名
+    redis_key = 'comment:start_urls'
 
     # 不同spider各自的settings
     custom_settings = {
         'ITEM_PIPELINES': {
-            'sina_scra.pipelines.CommentPipeline': 300,
+            # 'sina_scra.pipelines.CommentPipeline': 300,
         }
     }
 
