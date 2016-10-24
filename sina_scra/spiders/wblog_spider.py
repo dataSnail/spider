@@ -5,7 +5,7 @@
 from sina_scra.scrapy_redis_seu.spiders import RedisSpider
 from scrapy import Request
 from scrapy.spiders import Spider
-from sina_scra.items import SinaStatusItem
+from sina_scra.items import SinaWblogItem
 from sina_scra.items import SinaUserItem
 from sina_scra.items import SinaFlagItem
 from sina_scra.items import SinaAllJsonItem
@@ -34,8 +34,8 @@ class WblogSpider(RedisSpider):
 
     # 初始化
     def __init__(self, *args, **kwargs):
-        logging.info('-----initiating StatusSpider------')
-        super(StatusSpider, self).__init__(*args, **kwargs)
+        logging.info('-----initiating WblogSpider------')
+        super(WblogSpider, self).__init__(*args, **kwargs)
 
     # 解析页面
     def parse(self, response):
@@ -52,7 +52,7 @@ class WblogSpider(RedisSpider):
         try:
             # mod/pagelist表示当前页有微博内容
             if render_data['cards'][0]['mod_type'] == 'mod/pagelist':
-                item = SinaStatusItem()  # 微博内容
+                item = SinaWblogItem()  # 微博内容
                 self.init_item(item)
 
                 jItem = SinaAllJsonItem()  # 微博所有json内容
@@ -64,12 +64,12 @@ class WblogSpider(RedisSpider):
                     if 'retweeted_status' in mblog.keys():
                         # 如果有原微博，那么也要保存下来
                         if 'deleted' in mblog['retweeted_status']:
-                            dItem = SinaStatusItem()  # 被删除的微博内容
+                            dItem = SinaWblogItem()  # 被删除的微博内容
                             self.init_item(dItem)
                             self.fill_dItem(dItem,mblog['retweeted_status'])
                             yield dItem
                         else:
-                            reItem = SinaStatusItem()
+                            reItem = SinaWblogItem()
                             self.init_item(reItem)
                             self.fill_item(reItem, mblog['retweeted_status'])
                             yield reItem
@@ -88,7 +88,7 @@ class WblogSpider(RedisSpider):
 
                     # 当前用户的微博
                     if 'deleted' in mblog:
-                        dItem = SinaStatusItem()
+                        dItem = SinaWblogItem()
                         self.init_item(dItem)
                         self.fill_dItem(dItem,mblog)
                         yield dItem
@@ -173,7 +173,7 @@ class WblogSpider(RedisSpider):
 #
 #         # mod/pagelist表示当前页有微博内容
 #         if render_data['cards'][0]['mod_type'] == 'mod/pagelist':
-#             item = SinaStatusItem()  # 微博内容
+#             item = SinaWblogItem()  # 微博内容
 #             self.init_item(item)
 #
 #             jItem = SinaAllJsonItem()  # 微博所有json内容
@@ -185,12 +185,12 @@ class WblogSpider(RedisSpider):
 #                 if 'retweeted_status' in mblog.keys():
 #                     # 如果有原微博，那么也要保存下来
 #                     if 'deleted' in mblog['retweeted_status']:
-#                         dItem = SinaStatusItem()  # 被删除的微博内容
+#                         dItem = SinaWblogItem()  # 被删除的微博内容
 #                         self.init_item(dItem)
 #                         self.fill_dItem(dItem,mblog['retweeted_status'])
 #                         yield dItem
 #                     else:
-#                         reItem = SinaStatusItem()
+#                         reItem = SinaWblogItem()
 #                         self.init_item(reItem)
 #                         self.fill_item(reItem, mblog['retweeted_status'])
 #                         yield reItem
@@ -209,7 +209,7 @@ class WblogSpider(RedisSpider):
 #
 #                 # 当前用户的微博
 #                 if 'deleted' in mblog:
-#                     dItem = SinaStatusItem()
+#                     dItem = SinaWblogItem()
 #                     self.init_item(dItem)
 #                     self.fill_dItem(dItem,mblog)
 #                     yield dItem
