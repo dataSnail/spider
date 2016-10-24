@@ -14,10 +14,10 @@ class SinaScraItem(scrapy.Item):
     pass
 
 class UserRelationItem(scrapy.Item):
-    
+
     uid = scrapy.Field()
     fid = scrapy.Field()
-    
+
 class UserInfoItem(scrapy.Item):
     uid = scrapy.Field()
     scree_name =scrapy.Field()
@@ -32,7 +32,7 @@ class UserInfoItem(scrapy.Item):
     description = scrapy.Field()
     verified_type = scrapy.Field()
 
-class SinaStatusItem(scrapy.Item):
+class SinaWblogItem(scrapy.Item):
     # 新浪用户所有微博
     uid = scrapy.Field()
     mid = scrapy.Field()
@@ -91,4 +91,4 @@ class SinaCommentItem(scrapy.Item):
     source = scrapy.Field()
     like_counts = scrapy.Field()
     created_at = scrapy.Field()
-    crawl_timestamp = scrapy.Field()    
+    crawl_timestamp = scrapy.Field()

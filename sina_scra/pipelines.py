@@ -60,7 +60,7 @@ class SinaScraPipeline(object):
             logging.error(e)
 
 
-class StatusPipeline(object):
+class WblogPipeline(object):
     def __init__(self):
         self.dbpool = dbManager().get_dbpool()
 
@@ -203,7 +203,7 @@ class CommentPipeline(object):
     #         logging.error(e)
 
 
-class StatusJsonPipeline(object):
+class WblogJsonPipeline(object):
     def __init__(self):
         self.dbpool = dbManager(my_db='sina_wblog_json').get_dbpool()
 
