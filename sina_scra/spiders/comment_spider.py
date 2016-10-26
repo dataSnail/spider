@@ -10,6 +10,7 @@ from sina_scra.items import SinaCommentItem
 from sina_scra.items import SinaAllJsonItem
 from sina_scra.items import SinaFlagItem
 
+import re
 import json
 import time
 import MySQLdb
@@ -30,7 +31,7 @@ class CommentSpider(RedisSpider):
         }
         'DOWNLOADER_MIDDLEWARES' : {
             'sina_scra.ipproxy.middleware.UserAgentMiddleware': 543,
-            'sina_scra.ipproxy.middleware.aBuProxyMiddleware':544,
+            'sina_scra.ipproxy.middleware.noProxyMiddleware':544,
             'sina_scra.ipproxy.middleware.MyCookieMiddleware': 545,
         }
     }
@@ -39,6 +40,7 @@ class CommentSpider(RedisSpider):
     def __init__(self, *args, **kwargs):
         logging.info('-----initiating CommentSpider------')
         super(CommentSpider, self).__init__(*args, **kwargs)
+        self.pattern_num = r'\d+'
 
     # 解析页面
     def parse(self, response):
@@ -46,7 +48,7 @@ class CommentSpider(RedisSpider):
 
         try:
             render_data = json.loads(response.body)
-            if 'page=1' in response.url:
+            if len(render_data) == 2:
                 render_data = render_data[1]
             else:
                 render_data = render_data[0]
@@ -61,9 +63,9 @@ class CommentSpider(RedisSpider):
             if render_data['mod_type'] == 'mod/pagelist':
                 item = SinaCommentItem()  # 微博评论
                 self.init_item(item)
-
+                mid = re.findall(self.pattern_num, response,url)[0]
                 for comment in render_data['card_group']:
-                    self.fill_item(item, comment, self.total_mids[response.meta['mIndex']])
+                    self.fill_item(item, comment, mid)
 
                 yield item
         except Exception as e:

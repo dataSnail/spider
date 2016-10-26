@@ -153,11 +153,12 @@ class MyCookieMiddleware(object):
         self.load_cookies = requests.utils.dict_from_cookiejar(load_cookiejar)
 
     def process_request(self,request,spider):
-        logging.info('using MyCookieMiddleware--------------')
+        logging.info('using MyCookieMiddleware-----------------------------------------------MyCookieMiddleware')
         request.cookie = self.load_cookies
 
     def process_response(self,request,response,spider):
         if response.status == 404:
+            print 'here'
             print response.url
             # self.cnt += 1
             # if self.cnt == 20:
