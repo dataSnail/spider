@@ -28,7 +28,7 @@ class CommentSpider(RedisSpider):
     custom_settings = {
         'ITEM_PIPELINES': {
             'sina_scra.pipelines.CommentPipeline': 300,
-        }
+        },
         'DOWNLOADER_MIDDLEWARES' : {
             'sina_scra.ipproxy.middleware.UserAgentMiddleware': 543,
             'sina_scra.ipproxy.middleware.noProxyMiddleware':544,
@@ -63,7 +63,7 @@ class CommentSpider(RedisSpider):
             if render_data['mod_type'] == 'mod/pagelist':
                 item = SinaCommentItem()  # 微博评论
                 self.init_item(item)
-                mid = re.findall(self.pattern_num, response,url)[0]
+                mid = re.findall(self.pattern_num, response.url)[0]
                 for comment in render_data['card_group']:
                     self.fill_item(item, comment, mid)
 

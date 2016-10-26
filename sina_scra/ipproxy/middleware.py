@@ -155,11 +155,18 @@ class MyCookieMiddleware(object):
     def process_request(self,request,spider):
         logging.info('using MyCookieMiddleware-----------------------------------------------MyCookieMiddleware')
         request.cookie = self.load_cookies
+        self.last_url = request.url
 
     def process_response(self,request,response,spider):
         if response.status == 404:
-            print 'here'
-            print response.url
+            if 'passport' in response.url':
+                execfile(os.path.abspath(os.pardir) + '/utils/login.py')
+                self.load_cookie
+                request.replace(url=self.last_url)
+                request.dont_filter = True
+                return request
+            # print 'here'
+            # print response.url
             # self.cnt += 1
             # if self.cnt == 20:
             #     self.cnt = 0
