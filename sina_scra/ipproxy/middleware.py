@@ -155,19 +155,20 @@ class MyCookieMiddleware(object):
 
     def process_request(self,request,spider):
         logging.info('using MyCookieMiddleware--------------')
-        request.cookie = self.load_cookies
+        #request.cookie = self.load_cookies
 
     def process_response(self,request,response,spider):
         if response.status == 404:
-            self.cnt += 1
-            if self.cnt == 20:
-                self.cnt = 0
-                logging.warn('in MyCookieMiddleware url : '+str(request.url)+' ,status:'+str(response.status))
-                sleep(5)
-                execfile(os.path.abspath(os.pardir) + '/utils/login.py')
-                self.load_cookie
-                request.dont_filter = True
-                return request
+            print response.url
+#             self.cnt += 1
+#             if self.cnt == 20:
+#                 self.cnt = 0
+#                 logging.warn('in MyCookieMiddleware url : '+str(request.url)+' ,status:'+str(response.status))
+#                 sleep(5)
+#                 execfile(os.path.abspath(os.pardir) + '/utils/login.py')
+#                 self.load_cookie
+#                 request.dont_filter = True
+#                 return request
         return response
 
 class noProxyMiddleware(object):
