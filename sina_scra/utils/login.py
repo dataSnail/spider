@@ -150,7 +150,7 @@ def login(username, password, pincode):
     ht = session.get('http://m.weibo.cn/single/rcList?format=cards&id=3914102592235131&type=comment&page=1', headers=headers)
     print ht
     # print os.path.abspath(os.pardir) + '\cookie.txt'
-    cookie_jar = cookielib.MozillaCookieJar(os.path.abspath(os.pardir) + '\ipproxy\cookie.txt')
+    cookie_jar = cookielib.MozillaCookieJar(os.path.abspath(os.pardir) + '/ipproxy/cookie.txt')
     requests.utils.cookiejar_from_dict({c.name: c.value for c in session.cookies}, cookie_jar)
     cookie_jar.save(ignore_discard=True, ignore_expires=True)
 

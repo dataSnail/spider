@@ -5,7 +5,6 @@ Created on 2016年10月5日
 @author: MQ
 '''
 from sina_scra.ipproxy.agents import AGENTS
-from sina_scra.ipproxy.cookie import COOKIE
 import random
 import logging
 import base64
@@ -150,25 +149,25 @@ class MyCookieMiddleware(object):
 
     def load_cookie(self):
         load_cookiejar = cookielib.MozillaCookieJar()
-        load_cookiejar.load(os.path.abspath(os.pardir) + '\ipproxy\cookie.txt', ignore_discard=True, ignore_expires=True)
+        load_cookiejar.load(os.path.abspath(os.pardir) + '/ipproxy/cookie.txt', ignore_discard=True, ignore_expires=True)
         self.load_cookies = requests.utils.dict_from_cookiejar(load_cookiejar)
 
     def process_request(self,request,spider):
         logging.info('using MyCookieMiddleware--------------')
-        #request.cookie = self.load_cookies
+        request.cookie = self.load_cookies
 
     def process_response(self,request,response,spider):
         if response.status == 404:
             print response.url
-#             self.cnt += 1
-#             if self.cnt == 20:
-#                 self.cnt = 0
-#                 logging.warn('in MyCookieMiddleware url : '+str(request.url)+' ,status:'+str(response.status))
-#                 sleep(5)
-#                 execfile(os.path.abspath(os.pardir) + '/utils/login.py')
-#                 self.load_cookie
-#                 request.dont_filter = True
-#                 return request
+            # self.cnt += 1
+            # if self.cnt == 20:
+            #     self.cnt = 0
+            #     logging.warn('in MyCookieMiddleware url : '+str(request.url)+' ,status:'+str(response.status))
+            #     sleep(5)
+            #     execfile(os.path.abspath(os.pardir) + '/utils/login.py')
+            #     self.load_cookie
+            #     request.dont_filter = True
+            #     return request
         return response
 
 class noProxyMiddleware(object):

@@ -29,7 +29,7 @@ class Ctest(object):
 
     def test(self):
         cookie = cookielib.MozillaCookieJar()
-        cookie.load(os.path.abspath(os.pardir) + '\ipproxy\cookie.txt', ignore_discard=True, ignore_expires=True)
+        cookie.load(os.path.abspath(os.pardir) + '/ipproxy/cookie.txt', ignore_discard=True, ignore_expires=True)
         agent = 'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36'
         headers = {
             "Host": "m.weibo.cn",
