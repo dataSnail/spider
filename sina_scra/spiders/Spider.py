@@ -36,7 +36,7 @@ class UserRelationSpider(RedisSpider):
         
     #redis 爬取
     def parse(self,response):
-        print '-----parse--------'
+#         print '-----parse--------'
         try:
             #获取返回json数据
             json_data = json.loads(response.body)
@@ -72,7 +72,15 @@ class UserRelationSpider(RedisSpider):
                 descriptionLs = []
                  
                 if json_data['count'] == None or json_data['count'] == 0 or str(json_data['count'])=='':
-                    logging.info('user'+str(item['uid'])+'does not follow anyone or '+str(response.url)+'have no information--------------------!!!!!!!')
+                    logging.info('uid::::::'+str(item['uid'])+'at page :::'+str(response.url)+'have no information---------------------------!!!!!write file...')
+                    #方案1：单独写一个文件之后处理；方案2：push到redis里面，重新做此url；方案3：循环请求，yield request；
+                    try:
+                        f = open('noInfomationUrls.txt','a')
+                        f.write("rpush frelation:start_urls "+str(response.url)+'\n')
+                    except Exception as e:
+                        logging.info('uid::::::'+str(item['uid'])+'at page :::'+str(response.url)+'can not write to file noInfomationUrls---------------!!!!!!!')
+                    finally:
+                        f.close()
                 else:
                     for card in json_data['cards'][0]['card_group']:
             #             userLs.append(str(self.user_list[self.user_current_index]))

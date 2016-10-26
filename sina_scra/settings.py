@@ -54,7 +54,7 @@ DOWNLOAD_DELAY = 1
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
 #     'sina_scra.ipproxy.middleware.ProxyMiddleware': 543,
-#     'sina_scra.ipproxy.middleware.aBuProxyMiddleware':543,
+    'sina_scra.ipproxy.middleware.aBuProxyMiddleware':543,
     'sina_scra.ipproxy.middleware.UserAgentMiddleware': 543,
 }
 

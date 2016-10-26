@@ -40,16 +40,16 @@ class dbManager2():
             
             
 if __name__ == '__main__':
-#     db = dbManager2()
-#     cur =dbManager2().get_cur('sina')
-#     sum1 = 0
-#     for i in range(1000):
-#         sql = 'select count(0) from frelation_%s'%i
-#         cur.execute(sql)
-#         count = cur.fetchall()
-#         print i,count[0][0]
-#         sum1+=count[0][0]
-#     print sum1
+    db = dbManager2()
+    cur =dbManager2().get_cur('sina')
+    sum1 = 0
+    for i in range(1000):
+        sql = 'select count(0) from frelation_%s'%i
+        cur.execute(sql)
+        count = cur.fetchall()
+        print i,count[0][0]
+        sum1+=count[0][0]
+    print sum1
 #     cur = dbManager2().get_cur('sina')
 #     cur.execute('select uid,currentPage,maxPage from uid_weibo where id = 1')
 #     uidData = cur.fetchall()
@@ -57,20 +57,20 @@ if __name__ == '__main__':
 #     current_page = uidData[0][1]
 #     current_max_page = uidData[0][2]
 #     print current_uid,current_page,current_max_page
-    pre_user_list = []
-    result_list=[]
-    db =dbManager2()
-    cur = db.get_cur('sina')
-    sql = 'SELECT uid from scra_flags_0 where wblog_flag = 0 ORDER BY id ASC LIMIT 0,100'
-    count = cur.execute(sql)
-    if count>0:
-        pre_user_list = cur.fetchall()
-        for i in pre_user_list:
-            result_list.append(i[0])
-    else:
-#         sys.exit()
-        print 'end=======================================>'
-    db.release()
-    print result_list
+#     pre_user_list = []
+#     result_list=[]
+#     db =dbManager2()
+#     cur = db.get_cur('sina')
+#     sql = 'SELECT uid from scra_flags_0 where wblog_flag = 0 ORDER BY id ASC LIMIT 0,100'
+#     count = cur.execute(sql)
+#     if count>0:
+#         pre_user_list = cur.fetchall()
+#         for i in pre_user_list:
+#             result_list.append(i[0])
+#     else:
+# #         sys.exit()
+#         print 'end=======================================>'
+#     db.release()
+#     print result_list
     
     

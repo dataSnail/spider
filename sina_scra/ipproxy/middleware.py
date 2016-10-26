@@ -8,7 +8,6 @@ from sina_scra.ipproxy.agents import AGENTS
 from sina_scra.ipproxy.cookie import COOKIE
 import random
 import logging
-from sina_scra.utils.dbManager2 import dbManager2
 import base64
 from time import sleep
 
@@ -94,10 +93,11 @@ class aBuProxyMiddleware(object):
     proxyUser = "H5S031HK5GAI638P"
     proxyPass = "0451B74483012582"
     proxyAuth = "Basic " + base64.encodestring(proxyUser + ":" + proxyPass)
-    print proxyAuth
+#     print proxyAuth
     def process_request(self,request,spider):
 #         print request
-        logging.info('using ProxyMiddleware-----------------------------------------------ProxyMiddleware')
+        self.last_url = request.url
+        logging.info('using aBuProxyMiddleware-----------------------------------------------aBuProxyMiddleware')
         request.meta['proxy'] = self.proxyServer
         request.headers["Proxy-Authorization"] = self.proxyAuth
         request.cookie = COOKIE
@@ -112,7 +112,7 @@ class aBuProxyMiddleware(object):
                 sleep(5)
                 logging.warn('too many request sleep for 5 seconds-------------------------------------------------->429')
             if response.status == 402:
-                sleep(5)
+                sleep(60)
                 logging.warn('up to date !!-------------------------------------------------->402')
             #等待
             request.meta['proxy'] = self.proxyServer
@@ -167,8 +167,32 @@ class MyCookieMiddleware(object):
                 execfile(os.path.abspath(os.pardir) + '/utils/login.py')
                 self.load_cookie
                 request.dont_filter = True
-                return request    
+                return request
         return response
+
+class noProxyMiddleware(object):
+    def process_request(self,request,spider):
+        self.last_url = request.url
+        logging.info('using noProxyMiddleware-----------------------------------------------noProxyMiddleware')
+
+    def process_response(self,request,response,spider):
+        logging.info('url : '+str(request.url)+' ,status:'+str(response.status))
+        if response.status != 200:
+            request.dont_filter = True
+            return request
+        if not response.url.startswith('http://m.weibo.cn'):
+#             self.change_ipproxy()
+            request.replace(url=self.last_url)
+            request.meta['proxy'] = self.proxyServer
+            request.headers["Proxy-Authorization"] = self.proxyAuth
+            request.dont_filter = True
+            return request
+        return response
+
+    def process_exception(self,request,exception,spider):
+        logging.info('process_exception in noProxyMiddleware changin proxy---------------------------------------<<<')
+        return request
+
 # if __name__ == '__main__':
 #     a = ProxyMiddleware()
 #     a.change_ipproxy()
