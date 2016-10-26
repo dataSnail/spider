@@ -28,6 +28,11 @@ class CommentSpider(RedisSpider):
         'ITEM_PIPELINES': {
             'sina_scra.pipelines.CommentPipeline': 300,
         }
+        'DOWNLOADER_MIDDLEWARES' : {
+            'sina_scra.ipproxy.middleware.UserAgentMiddleware': 543,
+            'sina_scra.ipproxy.middleware.aBuProxyMiddleware':544,
+            'sina_scra.ipproxy.middleware.MyCookieMiddleware': 545,
+        }
     }
 
     # 初始化

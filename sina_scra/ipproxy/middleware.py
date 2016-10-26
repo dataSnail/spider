@@ -137,9 +137,38 @@ class aBuProxyMiddleware(object):
         request.headers["Proxy-Authorization"] = self.proxyAuth
         return request
 
+import os
+import cookielib
+import requests
 
 
+class MyCookieMiddleware(object):
 
+    def __init__(self):
+        self.load_cookie()
+        self.cnt = 0
+
+    def load_cookie(self):
+        load_cookiejar = cookielib.MozillaCookieJar()
+        load_cookiejar.load(os.path.abspath(os.pardir) + '\ipproxy\cookie.txt', ignore_discard=True, ignore_expires=True)
+        self.load_cookies = requests.utils.dict_from_cookiejar(load_cookiejar)
+
+    def process_request(self,request,spider):
+        logging.info('using MyCookieMiddleware--------------')
+        request.cookie = self.load_cookies
+
+    def process_response(self,request,response,spider):
+        if response.status == 404:
+            self.cnt += 1
+            if self.cnt == 20:
+                self.cnt = 0
+                logging.warn('in MyCookieMiddleware url : '+str(request.url)+' ,status:'+str(response.status))
+                sleep(5)
+                execfile(os.path.abspath(os.pardir) + '/utils/login.py')
+                self.load_cookie
+                request.dont_filter = True
+                return request    
+        return response
 # if __name__ == '__main__':
 #     a = ProxyMiddleware()
 #     a.change_ipproxy()
