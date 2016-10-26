@@ -27,8 +27,8 @@ class WblogSpider(RedisSpider):
     # 不同spider各自的settings
     custom_settings = {
         'ITEM_PIPELINES': {
-            # 'sina_scra.pipelines.WblogPipeline': 300,
-            # 'sina_scra.pipelines.WblogJsonPipeline': 301,
+            'sina_scra.pipelines.WblogPipeline': 300,
+            'sina_scra.pipelines.WblogJsonPipeline': 301,
         }
     }
 
@@ -314,6 +314,8 @@ class WblogSpider(RedisSpider):
         if mblog['isLongText']:
             if mblog['isLongText'] == 'true':
                 item['isLongText'].append('1')
+            else:
+                item['isLongText'].append('0')
         else:
             item['isLongText'].append('0')
         # 微博来源

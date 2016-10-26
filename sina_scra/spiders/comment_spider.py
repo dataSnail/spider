@@ -26,7 +26,7 @@ class CommentSpider(RedisSpider):
     # 不同spider各自的settings
     custom_settings = {
         'ITEM_PIPELINES': {
-            # 'sina_scra.pipelines.CommentPipeline': 300,
+            'sina_scra.pipelines.CommentPipeline': 300,
         }
     }
 

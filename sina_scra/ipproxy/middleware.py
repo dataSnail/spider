@@ -1,10 +1,11 @@
-# -*- coding:utf-8 -*-  
+# -*- coding:utf-8 -*-
 '''
 Created on 2016年10月5日
 
 @author: MQ
 '''
 from sina_scra.ipproxy.agents import AGENTS
+from sina_scra.ipproxy.cookie import COOKIE
 import random
 import logging
 from sina_scra.utils.dbManager2 import dbManager2
@@ -17,7 +18,7 @@ class UserAgentMiddleware(object):
         agent = random.choice(AGENTS)
         if agent:
             request.headers['User-Agent'] = agent
-            
+
 
 # class ProxyMiddleware(object):
 #     ip = '127.0.0.1'
@@ -32,8 +33,8 @@ class UserAgentMiddleware(object):
 # #         print request
 #         logging.info('using ProxyMiddleware-----------------------------------------------ProxyMiddleware')
 #         request.meta['proxy'] = self.proxy_addr
-#         
-#         
+#
+#
 #     def process_response(self,request,response,spider):
 #         #切换ip
 #         logging.info('url : '+str(request.url)+' ,status:'+str(response.status))
@@ -51,7 +52,7 @@ class UserAgentMiddleware(object):
 # #             request.dont_filter = True
 # #             return request
 #         return response
-#         
+#
 #     def select_ipproxy(self):
 #         ip_list = []
 #         #更新ip标记
@@ -72,7 +73,7 @@ class UserAgentMiddleware(object):
 #         self.change_ipproxy()
 #         request.meta['proxy'] = self.proxy_addr
 #         return request
-#     
+#
 #     def change_ipproxy(self):
 #         proxy_list = self.select_ipproxy()
 # #         print proxy_list
@@ -87,7 +88,7 @@ class UserAgentMiddleware(object):
 #             logging.info('proxy_addr is : '+self.proxy_addr)
 #         else:
 #             print 'can not change_ipproxy'
-  
+
 class aBuProxyMiddleware(object):
     proxyServer = "http://proxy.abuyun.com:9010"
     proxyUser = "H5S031HK5GAI638P"
@@ -99,8 +100,8 @@ class aBuProxyMiddleware(object):
         logging.info('using ProxyMiddleware-----------------------------------------------ProxyMiddleware')
         request.meta['proxy'] = self.proxyServer
         request.headers["Proxy-Authorization"] = self.proxyAuth
-        
-        
+        request.cookie = COOKIE
+
     def process_response(self,request,response,spider):
         #切换ip
         logging.info('url : '+str(request.url)+' ,status:'+str(response.status))
@@ -115,7 +116,7 @@ class aBuProxyMiddleware(object):
                 logging.warn('up to date !!-------------------------------------------------->402')
             #等待
             request.meta['proxy'] = self.proxyServer
-            request.headers["Proxy-Authorization"] = self.proxyAuth       
+            request.headers["Proxy-Authorization"] = self.proxyAuth
             #切换代理，重新请求，设置不过滤上一次请求的url
             request.dont_filter = True
             return request
@@ -127,23 +128,21 @@ class aBuProxyMiddleware(object):
             request.dont_filter = True
             return request
         return response
-        
+
     def process_exception(self,request,exception,spider):
         logging.info('process_exception in aBuProxyMiddleware changin proxy---------------------------------------<<<')
 #         self.last_url = request.url
         #等待
         request.meta['proxy'] = self.proxyServer
-        request.headers["Proxy-Authorization"] = self.proxyAuth 
-        return request    
+        request.headers["Proxy-Authorization"] = self.proxyAuth
+        return request
 
 
 
-          
+
 # if __name__ == '__main__':
 #     a = ProxyMiddleware()
 #     a.change_ipproxy()
 #     print a.ip
 #     print a.port
-#     print a.protocol 
-        
-        
+#     print a.protocol
