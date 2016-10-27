@@ -178,6 +178,7 @@ class CommentPipeline(object):
                                                     'created_at, ' \
                                                     'crawl_timestamp) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)'
         try:
+            cur.execute('SET CHARSET utf8mb4')
             for i in range(len(item['cid'])):
                 cur.execute(sql,
                             (item['uid'][i], item['cid'][i], item['mid'][i], item['reply_id'][i], item['text'][i],
