@@ -31,7 +31,8 @@ class CommentSpider(RedisSpider):
         },
         'DOWNLOADER_MIDDLEWARES' : {
             'sina_scra.ipproxy.middleware.UserAgentMiddleware': 543,
-            'sina_scra.ipproxy.middleware.noProxyMiddleware':544,
+            # 'sina_scra.ipproxy.middleware.noProxyMiddleware':544,
+            'sina_scra.ipproxy.middleware.aBuProxyMiddleware':544,
             'sina_scra.ipproxy.middleware.MyCookieMiddleware': 545,
         }
     }
