@@ -186,6 +186,8 @@ class noProxyMiddleware(object):
     def process_response(self,request,response,spider):
         logging.info('url : '+str(request.url)+' ,status:'+str(response.status))
         if response.status != 200:
+            logging.warn('noProxy response:status::-------------------------------------------------->%s'%str(response.status))
+            sleep(10)
             request.dont_filter = True
             return request
         if not response.url.startswith('http://m.weibo.cn'):
