@@ -99,7 +99,6 @@ class aBuProxyMiddleware(object):
         logging.info('using aBuProxyMiddleware-----------------------------------------------aBuProxyMiddleware')
         request.meta['proxy'] = self.proxyServer
         request.headers["Proxy-Authorization"] = self.proxyAuth
-        request.cookie = COOKIE
 
     def process_response(self,request,response,spider):
         #切换ip
@@ -159,7 +158,7 @@ class MyCookieMiddleware(object):
 
     def process_response(self,request,response,spider):
         if response.status == 404:
-            if 'passport' in response.url:
+            if 'passport' in response.url':
                 execfile(os.path.abspath(os.pardir) + '/utils/login.py')
                 self.load_cookie
                 request.replace(url=self.last_url)
