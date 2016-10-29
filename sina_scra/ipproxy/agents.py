@@ -525,4 +525,6 @@ HEADER = {
         'Accept-Language': 'zh-CN,zh;q=0.8',
         'Connection': 'keep-alive',
         'Accept-Encoding': 'gzip, deflate, sdch',
+        "Upgrade-Insecure-Requests": "1",
+        'Host':'m.weibo.cn'
           }

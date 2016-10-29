@@ -8,6 +8,8 @@
 
 多爬虫运行脚本：（与爬虫放在同一目录下）
 
+v0.1
+```
 #!/bin/bash
 echo "Please input the spide numbers"
 read data
@@ -30,4 +32,32 @@ done
 else
    echo "spider is NOT running..."
 fi
+```
+v0.2
+```
+#!/bin/bash
+echo "please input the spider numbers(from to):"
+read fdata
+read tdata
+for((i=$fdata; i<=$tdata; i++));
+do
+    sudo cp -R /usr/local/src/spider /usr/local/src/spider_$i
+#echo $data
+done
+echo "Run the spiders(spider_$[fdata]~~spider_$[tdata]) right now?(y/n)"
+read isnow
+if [ "$isnow"x = "y"x ];
+then
+for ((j=$fdata; j<=$tdata; j++));
+do
+    cd /usr/local/src/spider_$j
+    # log file path /usr/local/src/logs/
+   # sudo scrapy crawl user_relation -s LOG_FILE=/usr/local/src/logs/spider_${j}.log&
+    echo "spider_$j is RUNNING..."
+done
+else
+   echo "spider is NOT running..."
+fi
 
+
+```

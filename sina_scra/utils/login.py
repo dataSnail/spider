@@ -15,7 +15,6 @@ Info
 import os
 
 import requests
-import re
 import json
 import base64
 import time
@@ -24,10 +23,10 @@ import random
 from PIL import Image
 import cookielib
 import urllib2
-try:
-    from urllib.parse import quote_plus
-except:
-    from urllib import quote_plus
+# try:
+#     from urllib.parse import quote_plus
+# except:
+from urllib import quote_plus
 
 '''
 3.4
@@ -50,7 +49,7 @@ headers = {
 session = requests.session()
 # 访问登录的初始页面
 index_url = "https://passport.weibo.cn/signin/login"
-session.get(index_url, headers=headers)
+# session.get(index_url, headers=headers)
 
 
 def get_su(username):
@@ -150,7 +149,7 @@ def login(username, password, pincode):
     ht = session.get('http://m.weibo.cn/single/rcList?format=cards&id=3914102592235131&type=comment&page=1', headers=headers)
     print ht
     # print os.path.abspath(os.pardir) + '\cookie.txt'
-    cookie_jar = cookielib.MozillaCookieJar(os.path.abspath(os.pardir) + '/ipproxy/cookie.txt')
+    cookie_jar = cookielib.MozillaCookieJar(os.path.abspath(os.pardir)+'/sina_scra/ipproxy/cookie.txt')
     requests.utils.cookiejar_from_dict({c.name: c.value for c in session.cookies}, cookie_jar)
     cookie_jar.save(ignore_discard=True, ignore_expires=True)
 
@@ -160,8 +159,8 @@ def login(username, password, pincode):
     # print(cn, com, mcn)
 
 
-if __name__ == "__main__":
-
+# if __name__ == "__main__":
+def runLogin():
     username = "15601588775"
     password = "19930331NORTH"
     pincode = login_pre(username)

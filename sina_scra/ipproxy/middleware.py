@@ -9,6 +9,7 @@ import random
 import logging
 import base64
 from time import sleep
+from sina_scra.utils import login
 
 class UserAgentMiddleware(object):
     def process_request(self,request,spider):
@@ -138,32 +139,49 @@ class aBuProxyMiddleware(object):
 import os
 import cookielib
 import requests
-
+import inspect
 
 class MyCookieMiddleware(object):
-
+    this_file=inspect.getfile(inspect.currentframe())
     def __init__(self):
         self.load_cookie()
         self.cnt = 0
 
     def load_cookie(self):
         load_cookiejar = cookielib.MozillaCookieJar()
-        load_cookiejar.load(os.path.abspath(os.pardir) + '/ipproxy/cookie.txt', ignore_discard=True, ignore_expires=True)
+        load_cookiejar.load(os.path.abspath(os.path.dirname(self.this_file)) + '/cookie.txt', ignore_discard=True, ignore_expires=True)
         self.load_cookies = requests.utils.dict_from_cookiejar(load_cookiejar)
+#         session = requests.session()
+#         session.cookies = requests.utils.cookiejar_from_dict(self.load_cookies)
+#         from sina_scra.ipproxy.agents import HEADER
+#         ht = session.get('http://m.weibo.cn/single/rcList?format=cards&id=3469347529940805&type=comment&page=1', headers=HEADER)
+#         print ht.text
 
     def process_request(self,request,spider):
         logging.info('using MyCookieMiddleware-----------------------------------------------MyCookieMiddleware')
-        request.cookie = self.load_cookies
-        self.last_url = request.url
+#         request.session().cookies = self.load_cookies
+        
+        request.cookies = self.load_cookies
+        if 'passport' not in request.url:
+            self.last_url = request.url
+
 
     def process_response(self,request,response,spider):
-        if response.status == 404:
-            if 'passport' in response.url:
-                execfile(os.path.abspath(os.pardir) + '/utils/login.py')
-                self.load_cookie
-                request.replace(url=self.last_url)
-                request.dont_filter = True
-                return request
+#         if response.status == 404:
+        if 'passport' in response.url:
+            print response.url+'======'
+#             execfile('python '+os.path.abspath(os.pardir) + '\sina_scra\utils\login.py')
+            login.runLogin()
+            self.load_cookie()
+            print request.url+'++++++++++++++'
+#             request.replace_attr(url=self.last_url)
+            request._set_url(self.last_url)
+            request.dont_filter = True
+            print request.url+'--------------'
+            request.cookies = self.load_cookies
+            import scrapy
+            new_request = scrapy.Request(self.last_url,dont_filter = True,cookies=self.load_cookies)
+            return new_request
             # print 'here'
             # print response.url
             # self.cnt += 1

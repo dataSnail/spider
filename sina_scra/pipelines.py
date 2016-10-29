@@ -155,7 +155,7 @@ class WblogPipeline(object):
 class CommentPipeline(object):
     def __init__(self):
         # self.dbpool1 = dbManager().get_dbpool()
-        self.dbpool = dbManager(my_db='sina_comment').get_dbpool()
+        self.dbpool = dbManager(my_db='newdb').get_dbpool()
 
     def process_item(self, item, spider):
         # if 'comment_flag' in item.keys():
@@ -167,7 +167,7 @@ class CommentPipeline(object):
 
     # 插入评论
     def comment_insert(self, cur, item):
-        which_table = str(long(item['mid'][0]) % 1000)
+        which_table = str(0)#str(long(item['mid'][0]) % 1000)
         sql = 'INSERT IGNORE INTO comment_' + which_table + ' (uid, ' \
                                                     'cid, ' \
                                                     'mid, ' \
@@ -178,7 +178,7 @@ class CommentPipeline(object):
                                                     'created_at, ' \
                                                     'crawl_timestamp) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)'
         try:
-            cur.execute('SET CHARSET utf8mb4')
+#             cur.execute('SET CHARSET utf8mb4')
             for i in range(len(item['cid'])):
                 cur.execute(sql,
                             (item['uid'][i], item['cid'][i], item['mid'][i], item['reply_id'][i], item['text'][i],

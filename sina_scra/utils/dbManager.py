@@ -11,10 +11,10 @@ class dbManager():
 
     def __init__(self, my_db='sina'):
         self.__dbpool = adbapi.ConnectionPool('MySQLdb',
-                                            host = '223.3.75.180',
+                                            host = '223.3.94.211',
                                             db = my_db,
                                             user = 'root',
-                                            passwd = 'root@123',
+                                            passwd = 'root',
                                             cursorclass = MySQLdb.cursors.DictCursor,
                                             charset = 'utf8',
                                             use_unicode = True)
