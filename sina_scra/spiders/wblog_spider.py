@@ -105,6 +105,13 @@ class WblogSpider(RedisSpider):
                 yield jItem
             else:
                 logging.info('empty wblog: ' + response.url)
+                try:
+                    f = open('noWblogUrls.txt','a')
+                    f.write("rpush wblog:start_urls "+str(response.url)+'\n')
+                except Exception as e:
+                    logging.info('page :::'+str(response.url)+' can not write to file noWblogUrls---------------!!!!!!!')
+                finally:
+                    f.close()
         except Exception as e:
             logging.error('something is wrong on url : %s and the Exception e is ========>%s'%(response.url,str(e)))
 
