@@ -29,6 +29,11 @@ class WblogSpider(RedisSpider):
         'ITEM_PIPELINES': {
             'sina_scra.pipelines.WblogPipeline': 300,
             'sina_scra.pipelines.WblogJsonPipeline': 301,
+        },
+        'DOWNLOADER_MIDDLEWARES' : {
+            'sina_scra.ipproxy.middleware.UserAgentMiddleware': 543,
+            # 'sina_scra.ipproxy.middleware.noProxyMiddleware':544,
+            'sina_scra.ipproxy.middleware.aBuProxyMiddleware':546,
         }
     }
 
