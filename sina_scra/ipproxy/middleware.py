@@ -116,6 +116,7 @@ class aBuProxyMiddleware(object):
         #切换ip
         logging.info('url : '+str(request.url)+' ,status:'+str(response.status))
         if response.status != 200:
+            #返回错误状态，统一修复request.url,重新进行请求
             request.url = self.last_url
             #代理429错误，请求数量超过限制
             if response.status == 429:
@@ -124,10 +125,10 @@ class aBuProxyMiddleware(object):
             if response.status == 402:
                 sleep(60)
                 logging.warn('up to date !!-------------------------------------------------->402')
-            if response.status == 403:
+            if response.status == 403 or response.status == 503:
                 #重新切换ip
                 request.headers["Proxy-Switch-Ip"] = "yes"
-            
+
             request.meta['proxy'] = self.proxyServer
             request.headers["Proxy-Authorization"] = self.proxyAuth
             #切换代理，重新请求，设置不过滤上一次请求的url
