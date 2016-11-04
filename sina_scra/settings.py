@@ -54,8 +54,8 @@ COOKIES_ENABLED = True
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
 #     'sina_scra.ipproxy.middleware.noProxyMiddleware': 543,
-#     'sina_scra.ipproxy.middleware.aBuProxyMiddleware':543,
-#     'sina_scra.ipproxy.middleware.UserAgentMiddleware': 543,
+    'sina_scra.ipproxy.middleware.aBuProxyMiddleware':543,
+    'sina_scra.ipproxy.middleware.UserAgentMiddleware': 543,
 #     'sina_scar.ipproxy.middleware.MyCookieMiddleware':543
 }
 
@@ -106,6 +106,6 @@ REDIS_START_URLS_BATCH_SIZE=1
 # Schedule requests using a queue (FIFO).
 SCHEDULER_QUEUE_CLASS = 'sina_scra.scrapy_redis_seu.queue.SpiderPriorityQueue'
 
-REDIS_HOST = '223.3.94.211'
+REDIS_HOST = '223.3.94.145'
 REDIS_PORT = '6379'
-REDIS_URL = 'redis://:redis123@223.3.94.211:6379'
+REDIS_URL = 'redis://:redis123@223.3.94.145:6379'

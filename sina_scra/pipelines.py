@@ -36,7 +36,7 @@ class SinaScraPipeline(object):
         try:
             for i in range(len(item['fid'])):
                 f_sql = 'insert ignore into frelation_'+str(thash().uhash(item['uid'][0],1000))+' (uid,fid,insert_time) values(%s,%s,now())'
-                s_sql = 'insert ignore into scra_flags_0 (uid) values(%s)'
+                s_sql = 'insert ignore into scra_flags_2 (uid) values(%s)'
                 tx.execute(f_sql,(item['uid'][0],item['fid'][i]))
                 tx.execute(s_sql,(item['fid'][i],))
             logging.info('frelation_'+str(tableId)+' is inserting.....|||||')

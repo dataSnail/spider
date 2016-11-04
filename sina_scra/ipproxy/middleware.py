@@ -4,6 +4,8 @@ Created on 2016年10月5日
 
 @author: MQ
 '''
+import sys
+sys.path.append('../')
 import random
 import logging
 import base64
@@ -145,9 +147,10 @@ class aBuProxyMiddleware(object):
         return response
 
     def process_exception(self,request,exception,spider):
-        logging.info('process_exception in aBuProxyMiddleware changin proxy---------------------------------------<<<')
-#         self.last_url = request.url
-        #等待
+        logging.info('process_exception in aBuProxyMiddleware changing proxy---------------------------------------<<<')
+        request.url = self.last_url
+        #修复url，换ip
+        request.headers["Proxy-Switch-Ip"] = "yes"
         request.meta['proxy'] = self.proxyServer
         request.headers["Proxy-Authorization"] = self.proxyAuth
         return request
