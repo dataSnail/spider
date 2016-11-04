@@ -108,7 +108,7 @@ class aBuProxyMiddleware(object):
         if not request.url.startswith('http://m.weibo.cn'):
             logging.warn('request.url is::::'+request.url+' and the last_url is ::::'+self.last_url)
             request.headers["Proxy-Switch-Ip"] = "yes"
-            request.url = self.last_url
+            request._set_url(self.last_url)
             logging.warn('request.url is changed to :=====>'+request.url)
         else:
             self.last_url = request.url
@@ -121,7 +121,7 @@ class aBuProxyMiddleware(object):
         logging.info('url : '+str(request.url)+' ,status:'+str(response.status))
         if response.status != 200:
             #返回错误状态，统一修复request.url,重新进行请求
-            request.url = self.last_url
+            request._set_url(self.last_url)
             #代理429错误，请求数量超过限制
             if response.status == 429:
                 sleep(5)
@@ -140,7 +140,7 @@ class aBuProxyMiddleware(object):
             return request
         if not response.url.startswith('http://m.weibo.cn'):
 #             self.change_ipproxy()
-            request.url=self.last_url
+            request._set_url(self.last_url)
             request.meta['proxy'] = self.proxyServer
             request.headers["Proxy-Authorization"] = self.proxyAuth
             request.headers["Proxy-Switch-Ip"] = "yes"
@@ -150,7 +150,7 @@ class aBuProxyMiddleware(object):
 
     def process_exception(self,request,exception,spider):
         logging.info('process_exception in aBuProxyMiddleware changing proxy---------------------------------------<<<exception is ::::'+str(exception))
-        request.url = self.last_url
+        request._set_url(self.last_url)
         #修复url，换ip
         request.headers["Proxy-Switch-Ip"] = "yes"
         request.meta['proxy'] = self.proxyServer
@@ -176,7 +176,7 @@ class MyCookieMiddleware(object):
     def process_request(self,request,spider):
         logging.info('using MyCookieMiddleware-----------------------------------------------MyCookieMiddleware')
 #         request.session().cookies = self.load_cookies
-        
+
         request.cookies = self.load_cookies
         if 'passport' not in request.url:
             self.last_url = request.url
