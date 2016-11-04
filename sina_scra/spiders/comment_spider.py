@@ -232,7 +232,7 @@ class CommentSpider(RedisSpider):
             item['reply_id'].append('0')
         # 评论内容
         if comment['text']:
-            item['text'].append(comment['text'])
+            item['text'].append("".join(re.findall(ur"[\u4e00-\u9fa5a-z0-9\w\-\.,@?^=%&amp;:/~\+#<>\s]+", comment['text'])))
         else:
             item['text'].append('0')
         # 来源

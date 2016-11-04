@@ -10,6 +10,7 @@ from sina_scra.items import SinaUserItem
 from sina_scra.items import SinaFlagItem
 from sina_scra.items import SinaAllJsonItem
 
+import re
 import json
 import time
 import MySQLdb
@@ -319,7 +320,7 @@ class WblogSpider(RedisSpider):
             item['retweeted_mid'].append('0')
         # 微博内容
         if mblog['text']:
-            item['text'].append(mblog['text'])
+            item['text'].append("".join(re.findall(ur"[\u4e00-\u9fa5a-z0-9\w\-\.,@?^=%&amp;:/~\+#<>\s]+", mblog['text'])))
         else:
             item['text'].append('0')
         # 是否是长微博
@@ -394,7 +395,7 @@ class WblogSpider(RedisSpider):
         item['retweeted_mid'].append('0')
         # 微博内容
         if mblog['text']:
-            item['text'].append(mblog['text'])
+            item['text'].append("".join(re.findall(ur"[\u4e00-\u9fa5a-z0-9\w\-\.,@?^=%&amp;:/~\+#<>\s]+", mblog['text'])))
         else:
             item['text'].append('0')
         # 是否是长微博
@@ -436,7 +437,7 @@ class WblogSpider(RedisSpider):
         uItem['mbtype'] = user['mbtype'] if user['mbtype'] else '0'
         uItem['ismember'] = user['ismember'] if user['ismember'] else '0'
         uItem['fansNum'] = user['fansNum'] if user['fansNum'] else '0'
-        uItem['description'] = user['description'] if user['description'] else '0'
+        uItem['description'] = "".join(re.findall(ur"[\u4e00-\u9fa5a-z0-9\w\-\.,@?^=%&amp;:/~\+#<>\s]+", user['description'])) if user['description'] else '0'
         uItem['verified_type'] = user['verified_type'] if user['verified_type'] else '0'
         uItem['insert_time'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
 

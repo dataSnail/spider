@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-  
+# -*- coding:utf-8 -*-
 '''
 Created on 2016年10月3日
 
@@ -22,7 +22,7 @@ class UserRelationSpider(RedisSpider):
     start_urls = []
     user_list = []
     conn = dbManager2()
-    
+
     pre_user_count = 1
     custom_settings={
                      'ITEM_PIPELINES' : {
@@ -33,7 +33,7 @@ class UserRelationSpider(RedisSpider):
     def __init__(self, *args, **kwargs):
         print '-----__init__--------'
         super(UserRelationSpider, self).__init__(*args, **kwargs)
-        
+
     #redis 爬取
     def parse(self,response):
 #         print '-----parse--------'
@@ -70,7 +70,7 @@ class UserRelationSpider(RedisSpider):
                 ismemberLs = []
                 fansNumLs = []
                 descriptionLs = []
-                 
+
                 if json_data['count'] == None or json_data['count'] == 0 or str(json_data['count'])=='':
                     logging.info('uid::::::'+str(item['uid'])+'at page :::'+str(response.url)+'have no information---------------------------!!!!!write file...')
                     #方案1：单独写一个文件之后处理；方案2：push到redis里面，重新做此url；方案3：循环请求，yield request；
@@ -85,21 +85,21 @@ class UserRelationSpider(RedisSpider):
                     for card in json_data['cards'][0]['card_group']:
             #             userLs.append(str(self.user_list[self.user_current_index]))
                         followerLs.append(card['user']['id'])
-                         
+
                         uidLs.append(str(card['user']['id']))
                         screenNameLs.append(card['user']['screen_name'])
                         profileImgUrlLs.append(card['user']['profile_image_url'])
                         statusCountLs.append(card['user']['statuses_count'])
                         verifiedLs.append(card['user']['verified'])
                         verifiedReasonLs.append(card['user']['verified_reason'])
-                        descriptionLs.append("".join(re.findall(ur"[\u4e00-\u9fa5a-z0-9]+", card['user']['description'])))
+                        descriptionLs.append("".join(re.findall(ur"[\u4e00-\u9fa5a-z0-9\w\-\.,@?^=%&amp;:/~\+#<>\s]+", card['user']['description'])))
                         verifiedTypeLs.append(card['user']['verified_type'])
                         genderLs.append(card['user']['gender'])
                         mbtypeLs.append(card['user']['mbtype'])
                         ismemberLs.append(card['user']['ismember'])
                         fansNumLs.append(card['user']['fansNum'])
-                         
-                         
+
+
                     uItem['uid'] = uidLs
                     uItem['scree_name'] = screenNameLs
                     uItem['profile_img_url'] = profileImgUrlLs
@@ -112,14 +112,14 @@ class UserRelationSpider(RedisSpider):
                     uItem['fansNum'] = fansNumLs
                     uItem['description'] = descriptionLs
                     uItem['verified_type'] = verifiedTypeLs
-                     
-                      
+
+
                     item['fid'] = followerLs
             #         item.extend([Request(url,callback=self.parse_page) for url in urls])
                     yield item
                     yield uItem
-        
-    
+
+
     def start_requests_bak(self):
 #         print '-----start_requests--------'
         #开始的第一个id
@@ -130,10 +130,10 @@ class UserRelationSpider(RedisSpider):
             return [Request(url,meta={'currentPage':0,'maxPage':0,'dont_redirect': True},callback=self.parse_page) for url in self.start_urls]
         finally:
             pass
-    
+
 #     def error_function(self,response):
 #         print response.url
-    
+
     def parse_page_bak(self, response):
 #         print '-----parse--------'
         try:
@@ -154,7 +154,7 @@ class UserRelationSpider(RedisSpider):
                 #纠正第一次的currentPage值
                 response.meta['currentPage'] = 2
             item = UserRelationItem()
-            item['uid'] = self.user_list[self.user_current_index]   
+            item['uid'] = self.user_list[self.user_current_index]
             #当前用户爬完,启动下一用户
             if response.meta['currentPage'] == response.meta['maxPage']+1:
     #             print '=====>over'
@@ -167,8 +167,8 @@ class UserRelationSpider(RedisSpider):
                 self.user_current_index = self.user_current_index + 1
                 response.meta['currentPage'] = 1
     #             url = 'http://m.weibo.cn/page/json?containerid=100505%s_-_FOLLOWERS&page=1'%str(self.user_list[self.user_current_index][0])
-    #             yield Request(url,meta={'currentPage':response.meta['currentPage']+1,'maxPage':response.meta['maxPage']},callback=self.parse_page)   
-            
+    #             yield Request(url,meta={'currentPage':response.meta['currentPage']+1,'maxPage':response.meta['maxPage']},callback=self.parse_page)
+
     #         userLs = []
             followerLs = []
             uItem = UserInfoItem()
@@ -185,14 +185,14 @@ class UserRelationSpider(RedisSpider):
             ismemberLs = []
             fansNumLs = []
             descriptionLs = []
-            
+
             if json_data['count'] == None or json_data['count'] == 0 or str(json_data['count'])=='':
                 logging.info('user'+str(item['uid'])+'does not follow anyone or '+str(response.url)+'have no information--------------------!!!!!!!')
             else:
                 for card in json_data['cards'][0]['card_group']:
         #             userLs.append(str(self.user_list[self.user_current_index]))
                     followerLs.append(card['user']['id'])
-                    
+
                     uidLs.append(str(card['user']['id']))
                     screenNameLs.append(card['user']['screen_name'])
                     profileImgUrlLs.append(card['user']['profile_image_url'])
@@ -205,8 +205,8 @@ class UserRelationSpider(RedisSpider):
                     mbtypeLs.append(card['user']['mbtype'])
                     ismemberLs.append(card['user']['ismember'])
                     fansNumLs.append(card['user']['fansNum'])
-                    
-                    
+
+
                 uItem['uid'] = uidLs
                 uItem['scree_name'] = screenNameLs
                 uItem['profile_img_url'] = profileImgUrlLs
@@ -219,13 +219,13 @@ class UserRelationSpider(RedisSpider):
                 uItem['fansNum'] = fansNumLs
                 uItem['description'] = descriptionLs
                 uItem['verified_type'] = verifiedTypeLs
-                
-                 
+
+
                 item['fid'] = followerLs
         #         item.extend([Request(url,callback=self.parse_page) for url in urls])
                 yield item
                 yield uItem
-            
+
             #如果当前user_list已经遍历完，则请求新的user_list
             if self.user_current_index == len(self.user_list):
                 self.user_list = self.get_pre_user_list(self.pre_user_count)
@@ -234,8 +234,8 @@ class UserRelationSpider(RedisSpider):
     #         print url
             logging.info(url)
             yield Request(url,meta={'currentPage':response.meta['currentPage']+1,'maxPage':response.meta['maxPage'],'dont_redirect': True},callback=self.parse_page)
-    
-    
+
+
     #从数据库获得num个用户列表
     def get_pre_user_list(self,num=1):
         pre_user_list = []
@@ -248,8 +248,8 @@ class UserRelationSpider(RedisSpider):
             sys.exit()
             print 'end=======================================>'
         return pre_user_list
-    
-    
+
+
 #     def fill_userinfoItem(self,card):
 #         uidLs = []
 #         screenNameLs = []
@@ -262,7 +262,7 @@ class UserRelationSpider(RedisSpider):
 #         mbtypeLs = []
 #         ismemberLs = []
 #         fansNumLs = []
-#         
+#
 #         uidLs.append(str(card['user']['id']))
 #         screenNameLs.append(card['user']['screen_name'])
 #         profileImgUrlLs.append(card['user']['profile_image_url'])
@@ -275,11 +275,9 @@ class UserRelationSpider(RedisSpider):
 #         mbtypeLs.append(card['user']['mbtype'])
 #         ismemberLs.append(card['user']['ismember'])
 #         fansNumLs.append(card['user']['fansNum'])
-#         
+#
 #         return None
     @staticmethod
     def close(spider, reason):
         logging.error('Spider closed ==========================================>'+str(reason))
         #重启spider
-        
-        
