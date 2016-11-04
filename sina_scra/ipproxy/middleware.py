@@ -107,7 +107,9 @@ class aBuProxyMiddleware(object):
         #修复重定向bug
         if not request.url.startswith('http://m.weibo.cn'):
             logging.warn('request.url is::::'+request.url+' and the last_url is ::::'+self.last_url)
+            request.headers["Proxy-Switch-Ip"] = "yes"
             request.url = self.last_url
+            logging.warn('request.url is changed to :=====>'+request.url)
         else:
             self.last_url = request.url
         logging.info('using aBuProxyMiddleware-----------------------------------------------aBuProxyMiddleware')
@@ -147,7 +149,7 @@ class aBuProxyMiddleware(object):
         return response
 
     def process_exception(self,request,exception,spider):
-        logging.info('process_exception in aBuProxyMiddleware changing proxy---------------------------------------<<<')
+        logging.info('process_exception in aBuProxyMiddleware changing proxy---------------------------------------<<<exception is ::::'+str(exception))
         request.url = self.last_url
         #修复url，换ip
         request.headers["Proxy-Switch-Ip"] = "yes"
