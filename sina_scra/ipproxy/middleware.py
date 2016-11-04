@@ -4,10 +4,15 @@ Created on 2016年10月5日
 
 @author: MQ
 '''
-from sina_scra.ipproxy.agents import AGENTS
 import random
 import logging
 import base64
+import os
+import cookielib
+import requests
+import inspect
+
+from sina_scra.ipproxy.agents import AGENTS
 from time import sleep
 from sina_scra.utils import login
 
@@ -93,10 +98,16 @@ class aBuProxyMiddleware(object):
     proxyUser = "H5S031HK5GAI638P"
     proxyPass = "0451B74483012582"
     proxyAuth = "Basic " + base64.encodestring(proxyUser + ":" + proxyPass)
+    last_url = 'NULL'
 #     print proxyAuth
     def process_request(self,request,spider):
 #         print request
-        self.last_url = request.url
+        #修复重定向bug
+        if not request.url.startswith('http://m.weibo.cn'):
+            logging.warn('request.url is::::'+request.url+' and the last_url is ::::'+self.last_url)
+            request.url = self.last_url
+        else:
+            self.last_url = request.url
         logging.info('using aBuProxyMiddleware-----------------------------------------------aBuProxyMiddleware')
         request.meta['proxy'] = self.proxyServer
         request.headers["Proxy-Authorization"] = self.proxyAuth
@@ -105,7 +116,7 @@ class aBuProxyMiddleware(object):
         #切换ip
         logging.info('url : '+str(request.url)+' ,status:'+str(response.status))
         if response.status != 200:
-#             self.last_url = request.url
+            request.url = self.last_url
             #代理429错误，请求数量超过限制
             if response.status == 429:
                 sleep(5)
@@ -113,7 +124,10 @@ class aBuProxyMiddleware(object):
             if response.status == 402:
                 sleep(60)
                 logging.warn('up to date !!-------------------------------------------------->402')
-            #等待
+            if response.status == 403:
+                #重新切换ip
+                request.headers["Proxy-Switch-Ip"] = "yes"
+            
             request.meta['proxy'] = self.proxyServer
             request.headers["Proxy-Authorization"] = self.proxyAuth
             #切换代理，重新请求，设置不过滤上一次请求的url
@@ -121,9 +135,10 @@ class aBuProxyMiddleware(object):
             return request
         if not response.url.startswith('http://m.weibo.cn'):
 #             self.change_ipproxy()
-            request.replace(url=self.last_url)
+            request.url=self.last_url
             request.meta['proxy'] = self.proxyServer
             request.headers["Proxy-Authorization"] = self.proxyAuth
+            request.headers["Proxy-Switch-Ip"] = "yes"
             request.dont_filter = True
             return request
         return response
@@ -135,11 +150,6 @@ class aBuProxyMiddleware(object):
         request.meta['proxy'] = self.proxyServer
         request.headers["Proxy-Authorization"] = self.proxyAuth
         return request
-
-import os
-import cookielib
-import requests
-import inspect
 
 class MyCookieMiddleware(object):
     this_file=inspect.getfile(inspect.currentframe())
