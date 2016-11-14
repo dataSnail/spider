@@ -20,7 +20,7 @@ LOG_LEVEL = 'INFO'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
-# LOG_FILE = 'F:\\default.log'
+# LOG_FILE = 'D:\\default.log'
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 

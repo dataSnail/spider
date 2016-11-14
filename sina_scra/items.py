@@ -37,6 +37,7 @@ class SinaWblogItem(scrapy.Item):
     uid = scrapy.Field()
     mid = scrapy.Field()
     bid = scrapy.Field()
+    retweeted_uid = scrapy.Field()
     retweeted_mid = scrapy.Field()
     text = scrapy.Field()
     isLongText = scrapy.Field()
@@ -50,7 +51,7 @@ class SinaWblogItem(scrapy.Item):
     hasOutlink = scrapy.Field()
     created_timestamp = scrapy.Field()
     crawl_timestamp = scrapy.Field()
-
+    json_text = scrapy.Field()
 
 class SinaUserItem(scrapy.Item):
     uid = scrapy.Field()

@@ -15,6 +15,7 @@ import requests
 import inspect
 
 from sina_scra.ipproxy.agents import AGENTS
+from sina_scra.ipproxy.agents import HEADER
 from time import sleep
 from sina_scra.utils import login
 
@@ -174,7 +175,12 @@ class MyCookieMiddleware(object):
 #         print ht.text
 
     def process_request(self,request,spider):
-        logging.info('using MyCookieMiddleware-----------------------------------------------MyCookieMiddleware')
+        request.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36'
+        request.headers['Host'] = "m.weibo.cn"
+        request.headers['Connection'] = "keep-alive"
+        request.headers['Upgrade-Insecure-Requests'] = "1"
+        # logging.info('using MyCookieMiddleware-----------------------------------------------MyCookieMiddleware')
+        logging.info('process_request,url=%s', request.url)
 #         request.session().cookies = self.load_cookies
 
         request.cookies = self.load_cookies
@@ -183,6 +189,8 @@ class MyCookieMiddleware(object):
 
 
     def process_response(self,request,response,spider):
+        logging.info('process_response,url=%s, ', response.url)
+        logging.info('statuscode=%s', str(response.status))
 #         if response.status == 404:
         if 'passport' in response.url:
             print response.url+'======'
@@ -210,6 +218,9 @@ class MyCookieMiddleware(object):
             #     request.dont_filter = True
             #     return request
         return response
+
+    def process_exception(self,request,exception,spider):
+        logging.info('process_exception in MyCookieMiddleware changing proxy---------------------------------------<<<exception is ::::'+str(exception))
 
 class noProxyMiddleware(object):
     def process_request(self,request,spider):

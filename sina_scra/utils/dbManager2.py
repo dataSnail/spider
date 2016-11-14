@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-  
+# -*- coding:utf-8 -*-
 '''
 Created on 2016年10月3日
 
@@ -16,7 +16,7 @@ class dbManager2():
         self.charset = charset
         self.conn = None
         self.cur = None
-    
+
     def get_cur(self,dbname):
         try:
             self.conn=MySQLdb.connect(host=self.host,user=self.user,passwd=self.passwd,port=self.port,charset=self.charset)
@@ -25,20 +25,20 @@ class dbManager2():
         except Exception as e:
             logging.error(e)
         return self.cur
-    
-    
-    
+
+
+
     def release(self):
         if self.cur != None:
             self.cur.close()
         if self.conn != None:
             self.conn.close()
-    
+
     def commit(self):
         if self.conn != None:
             self.conn.commit()
-            
-            
+
+
 if __name__ == '__main__':
     db = dbManager2()
     cur =dbManager2().get_cur('sina')
@@ -72,5 +72,3 @@ if __name__ == '__main__':
 #         print 'end=======================================>'
 #     db.release()
 #     print result_list
-    
-    

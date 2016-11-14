@@ -27,12 +27,12 @@ class CommentSpider(RedisSpider):
     # 不同spider各自的settings
     custom_settings = {
         'ITEM_PIPELINES': {
-            'sina_scra.pipelines.CommentPipeline': 300,
+            # 'sina_scra.pipelines.CommentPipeline': 300,
         },
         'DOWNLOADER_MIDDLEWARES' : {
-            'sina_scra.ipproxy.middleware.UserAgentMiddleware': 543,
+            # 'sina_scra.ipproxy.middleware.UserAgentMiddleware': 543,
             # 'sina_scra.ipproxy.middleware.noProxyMiddleware':544,
-#             'sina_scra.ipproxy.middleware.aBuProxyMiddleware':546,
+            # 'sina_scra.ipproxy.middleware.aBuProxyMiddleware':546,
             'sina_scra.ipproxy.middleware.MyCookieMiddleware': 545,
         }
     }

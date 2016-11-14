@@ -5,3 +5,4 @@
 .gitignore
 .myumldata
 settings.py
+.idea
