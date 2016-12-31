@@ -13,24 +13,24 @@ class SinaScraItem(scrapy.Item):
     # name = scrapy.Field()
     pass
 
-class UserRelationItem(scrapy.Item):
+# class UserRelationItem(scrapy.Item):
+# 
+#     uid = scrapy.Field()
+#     fid = scrapy.Field()
 
-    uid = scrapy.Field()
-    fid = scrapy.Field()
-
-class UserInfoItem(scrapy.Item):
-    uid = scrapy.Field()
-    scree_name =scrapy.Field()
-    profile_img_url = scrapy.Field()
-    status_count = scrapy.Field()
-    verified = scrapy.Field()
-    verified_reason = scrapy.Field()
-    gender = scrapy.Field()
-    mbtype = scrapy.Field()
-    ismember = scrapy.Field()
-    fansNum = scrapy.Field()
-    description = scrapy.Field()
-    verified_type = scrapy.Field()
+# class UserInfoItem(scrapy.Item):
+#     uid = scrapy.Field()
+#     scree_name =scrapy.Field()
+#     profile_img_url = scrapy.Field()
+#     status_count = scrapy.Field()
+#     verified = scrapy.Field()
+#     verified_reason = scrapy.Field()
+#     gender = scrapy.Field()
+#     mbtype = scrapy.Field()
+#     ismember = scrapy.Field()
+#     fansNum = scrapy.Field()
+#     description = scrapy.Field()
+#     verified_type = scrapy.Field()
 
 class SinaWblogItem(scrapy.Item):
     # 新浪用户所有微博
