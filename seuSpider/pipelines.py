@@ -1,21 +1,26 @@
 # -*- coding: utf-8 -*-
 
-from seuSpider.utils.dbManager import dbManager
-from seuSpiderHandlers.sinaHandler import sinaHandler
 import logging
 import MySQLdb
-from seuSpiderHandlers.doubanHandler import doubanHandler
+
+from seuSpider.utils.dbManager import dbManager
+from seuSpider.spiderHandlers.sinaHandler import sinaHandler
+from seuSpider.items.sinaItems import userInfoItem,userRelationItem
+from seuSpider.spiderHandlers.doubanHandler import doubanHandler
+from seuSpider.items.doubanItems import shortCommentItem, reviewItem
 
 class sinaPipeline(object):
-    sinaHandlerInstance = sinaHandler()
+    __sinaHandlerInstance = sinaHandler()
+    __dbpool = dbManager().get_dbpool()
     def __init__(self):
-        self.dbpool = dbManager().get_dbpool()
+        pass
 
     def process_item(self, item, spider):
-        if 'fid' in item:
-            self.dbpool.runInteraction(self.sinaHandlerInstance.sinaRelationDBHandler,item)
-        if 'scree_name' in item:
-            self.dbpool.runInteraction(self.sinaHandlerInstance.sinaUserInfoDBHandler,item)
+        if item.__class__ == userRelationItem:
+            self.__dbpool.runInteraction(self.__sinaHandlerInstance.sinaRelationDBHandler,item)
+        if item.__class__ == userInfoItem:
+            self.__dbpool.runInteraction(self.__sinaHandlerInstance.sinaUserInfoDBHandler,item)
+        
         return item
     
 class WblogPipeline(object):
@@ -60,15 +65,6 @@ class WblogPipeline(object):
         except Exception as e:
             logging.error('error in ui_insert, the item is%s\n'%str(item))
             logging.error(e)
-
-    # 更新scra_flags表
-#     def sf_update(self, cur, item):
-#         which_table = str(long(item['uid']) % 200)
-#         sql = 'UPDATE scra_flags_' + which_table + ' SET wblog_flag=' + item['wblog_flag'] + ' WHERE uid=' + str(item['uid'])
-#         try:
-#             cur.execute(sql)
-#         except MySQLdb.Error, e:
-#             logging.info("sf_update:%s" % str(e))
 
     # 插入微博
     def wblog_insert(self, cur, item):
@@ -189,20 +185,16 @@ class WblogJsonPipeline(object):
 
 
 class doubanPipeline(object):
-    doubanHandlerInstance = doubanHandler()
+    __doubanHandlerInstance = doubanHandler()
+    __dbpool = dbManager().get_dbpool()
     def __init__(self):
-        self.dbpool = dbManager().get_dbpool()
-
+        pass
+        
     def process_item(self, item, spider):
-        self.dbpool.runInteraction(self.doubanHandlerInstance.commentDBHandler,item)
-        return item
-
-class doubanReviewPipeline(object):
-    doubanHandlerInstance = doubanHandler()
-    def __init__(self):
-        self.dbpool = dbManager().get_dbpool()
-
-    def process_item(self, item, spider):
-        self.dbpool.runInteraction(self.doubanHandlerInstance.reviewDBHandler,item)
-        return item
+        if item.__class__ == shortCommentItem:
+            self.__dbpool.runInteraction(self.__doubanHandlerInstance.commentDBHandler,item)
+            return item
+        if item.__class__ == reviewItem:
+            self.__dbpool.runInteraction(self.__doubanHandlerInstance.reviewDBHandler,item)
+            return item
 

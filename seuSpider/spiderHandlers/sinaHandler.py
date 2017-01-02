@@ -37,13 +37,8 @@ class sinaHandler(object):
             if json_data['count'] == None or json_data['count'] == 0 or str(json_data['count'])=='':
                 logging.info('uid::::::'+str(urItem['uid'])+'at page :::'+str(url)+'have no information---------------------------!!!!!write file...')
                 #方案1：单独写一个文件之后处理；方案2：push到redis里面，重新做此url；方案3：循环请求，yield request；
-                try:
-                    f = open('noInfomationUrls.txt','a')
-                    f.write("rpush frelation:start_urls "+str(url)+'\n')
-                except Exception as e:
-                    logging.info('uid::::::'+str(urItem['uid'])+'at page :::'+str(url)+'can not write to file noInfomationUrls---------------!!!!!!!')
-                finally:
-                    f.close()
+                with open('noInfomationUrls.txt','a') as file:
+                    file.write("rpush frelation:start_urls "+str(url)+'\n')
             else:
                 for card in json_data['cards']:
         #             userLs.append(str(self.user_list[self.user_current_index]))
@@ -81,6 +76,10 @@ class sinaHandler(object):
                 uiItem['verified_type'] = uiItemLs.verified_typeLs
 
                 return uiItem,urItem
+            
+            
+            
+#---------pipeline DBHandler---------
     def sinaRelationDBHandler(self,cur,item):
         """处理新浪关系的数据库操作
         """
@@ -97,7 +96,6 @@ class sinaHandler(object):
     def sinaUserInfoDBHandler(self,cur,item):
         """处理新浪用户信息的数据库操作
         """
-#         tableLs = []
         try:
             for i in range(len(item['uid'])):
     #                 tableLs.append(str(thash().uhash(uItem['uid'][i],200)))

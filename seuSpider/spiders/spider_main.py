@@ -4,14 +4,14 @@ Created on 2016年12月30日
 
 @author: MQ
 '''
-from seuSpider.scrapy_redis_seu.spiders import RedisSpider
-from scrapy import Request
-import json
-from seuSpider.utils.dbManager2 import dbManager2
 # import sys
 import logging
 # import getopt
-from seuSpiderHandlers.doubanHandler import doubanHandler
+import json
+from scrapy import Request
+from seuSpider.utils.dbManager2 import dbManager2
+from seuSpider.scrapy_redis_seu.spiders import RedisSpider
+# from seuSpiderHandlers.doubanHandler import doubanHandler
 from seuSpiderHandlers.sinaHandler import sinaHandler
 
 class spiderWorker(RedisSpider):

@@ -12,12 +12,6 @@ class userRelationItem(scrapy.Item):
     #关注目标用户id
     fid = scrapy.Field()
 
-class userRelationitemLs(object):
-    #用户id
-    uidLs = []
-    #关注目标用户id
-    fidLs = []
-    
 class userInfoItem(scrapy.Item):
     uid = scrapy.Field()
     scree_name =scrapy.Field()
@@ -32,21 +26,7 @@ class userInfoItem(scrapy.Item):
     description = scrapy.Field()
     verified_type = scrapy.Field()
     
-class userInfoItemLs(object):
-    uidLs =  []
-    scree_nameLs = []
-    profile_img_urlLs =  []
-    status_countLs =  []
-    verifiedLs =  []
-    verified_reasonLs =  []
-    genderLs =  []
-    mbtypeLs =  []
-    mbrankLs =  []
-    followers_countLs =  []
-    descriptionLs =  []
-    verified_typeLs =  []
-
-class SinaWblogItem(scrapy.Item):
+class sinaWblogItem(scrapy.Item):
     # 新浪用户所有微博
     uid = scrapy.Field()
     mid = scrapy.Field()
@@ -64,3 +44,42 @@ class SinaWblogItem(scrapy.Item):
     hasOutlink = scrapy.Field()
     created_timestamp = scrapy.Field()
     crawl_timestamp = scrapy.Field()
+
+#----------list-------------
+class userRelationitemLs(object):
+    #用户id
+    uidLs = []
+    #关注目标用户id
+    fidLs = []
+class userInfoItemLs(object):
+    uidLs =  []
+    scree_nameLs = []
+    profile_img_urlLs =  []
+    status_countLs =  []
+    verifiedLs =  []
+    verified_reasonLs =  []
+    genderLs =  []
+    mbtypeLs =  []
+    mbrankLs =  []
+    followers_countLs =  []
+    descriptionLs =  []
+    verified_typeLs =  []
+    
+class sinaWblogItemLs(scrapy.Item):
+    # 新浪用户所有微博
+    uidLs = []
+    midLs = []
+    bidLs = []
+    retweeted_midLs = []
+    textLs = []
+    isLongTextLs = []
+    sourceLs = []
+    reposts_countLs = []
+    comments_countLs = []
+    attitudes_countLs = []
+    like_countLs = []
+    hasPicLs = []
+    hasGifLs = []
+    hasOutlinkLs = []
+    created_timestampLs = []
+    crawl_timestampLs = []
