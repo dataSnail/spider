@@ -12,7 +12,7 @@ from scrapy import Request
 from seuSpider.utils.dbManager2 import dbManager2
 from seuSpider.scrapy_redis_seu.spiders import RedisSpider
 # from seuSpiderHandlers.doubanHandler import doubanHandler
-from seuSpiderHandlers.sinaHandler import sinaHandler
+from seuSpider.spiderHandlers.sinaHandler import sinaHandler
 
 class spiderWorker(RedisSpider):
     """运行第一个参数
@@ -23,20 +23,10 @@ class spiderWorker(RedisSpider):
     start_urls = []
     conn = dbManager2()
     
-#     custom_settings={
-#         'ITEM_PIPELINES' : {
-#             'seuSpider.pipelines.doubanReviewPipeline': 300
-#                            },
-#         'DOWNLOADER_MIDDLEWARES' : {
-#             'seuSpider.ipproxy.middleware.UserAgentMiddleware': 543,
-#             'seuSpider.ipproxy.middleware.noProxyMiddleware':544,
-#             'seuSpider.ipproxy.middleware.CookiesMiddleware': 543
-#         }
-#     }
-    
     custom_settings={
         'ITEM_PIPELINES' : {
-            'seuSpider.pipelines.sinaPipeline': 300
+            'seuSpider.pipelines.sinaPipeline': 300,
+#             'seuSpider.pipelines.doubanReviewPipeline': 300
                            },
         'DOWNLOADER_MIDDLEWARES' : {
             'seuSpider.ipproxy.middleware.UserAgentMiddleware': 543,
@@ -54,7 +44,6 @@ class spiderWorker(RedisSpider):
 #                 logging.info("REDIS_KEY = %s",self.redis_key)
 #             else:
 #                 sys.exit()
-            
 
     #redis 爬取
     def parse(self,response):

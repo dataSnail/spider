@@ -8,6 +8,7 @@ import re
 import logging
 from seuSpider.items.sinaItems import userRelationItem,userRelationitemLs
 from seuSpider.items.sinaItems import userInfoItem,userInfoItemLs
+import MySQLdb
 
 class sinaHandler(object):
     """
@@ -106,4 +107,67 @@ class sinaHandler(object):
     #             logging.info('userinfo_'+','.join(tableLs)+' is inserting.....|||||')
         except Exception as e:
     #             logging.error('DBError---->userInfo::'+str(uItem['uid'])+' did not insert into table'+','.join(tableLs))
+            logging.error(e)
+            
+    def sinaMblogDBHandler(self, cur, item):
+        which_table = str(long(item['uid'][0]) % 1000)
+        sql = 'INSERT IGNORE INTO wblog_' + which_table + ' (uid, ' \
+                                                  'mid, ' \
+                                                  'bid, ' \
+                                                  'retweeted_mid, ' \
+                                                  'text, ' \
+                                                  'isLongText, ' \
+                                                  'source, ' \
+                                                  'reposts_count, ' \
+                                                  'comments_count, ' \
+                                                  'attitudes_count, ' \
+                                                  'like_count, ' \
+                                                  'hasPic, ' \
+                                                  'hasGif, ' \
+                                                  'hasOutlink, ' \
+                                                  'created_timestamp, ' \
+                                                  'crawl_timestamp, ' \
+                                                  'comment_flag) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+        try:
+            for i in range(len(item['uid'])):
+                if item['comments_count'][i] == 0:
+                    comment_flag = '1'
+                else:
+                    comment_flag = '0'
+                cur.execute(sql,
+                            (item['uid'][i], item['mid'][i], item['bid'][i], item['retweeted_mid'][i], item['text'][i],
+                             item['isLongText'][i], item['source'][i],
+                             item['reposts_count'][i], item['comments_count'][i], item['attitudes_count'][i],
+                             item['like_count'][i], item['hasPic'][i],
+                             item['hasGif'][i], item['hasOutlink'][i], item['created_timestamp'][i],
+                             item['crawl_timestamp'], comment_flag))
+        except MySQLdb.Error, e:
+            logging.info("uf_insert:%s" % str(e))
+        except Exception as e:
+            logging.error('error in wblog_insert, the item is:%s\n'%str(item))
+            logging.error(e)
+            
+    def sinaCommentDBHandler(self, cur, item):
+        which_table = str(0)#str(long(item['mid'][0]) % 1000)
+        sql = 'INSERT IGNORE INTO comment_' + which_table + ' (uid, ' \
+                                                    'cid, ' \
+                                                    'mid, ' \
+                                                    'reply_id, ' \
+                                                    'text, ' \
+                                                    'source, ' \
+                                                    'like_counts, ' \
+                                                    'created_at, ' \
+                                                    'crawl_timestamp) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+        try:
+#             cur.execute('SET CHARSET utf8mb4')
+            for i in range(len(item['cid'])):
+                cur.execute(sql,
+                            (item['uid'][i], item['cid'][i], item['mid'][i], item['reply_id'][i], item['text'][i],
+                             item['source'][i],
+                             item['like_counts'][i], item['created_at'][i],
+                             item['crawl_timestamp']))
+        except MySQLdb.Error, e:
+            logging.info("uf_insert:%s" % str(e))
+        except Exception as e:
+            logging.error('error in comment_insert, the item is:%s\n'%str(item))
             logging.error(e)

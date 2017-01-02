@@ -26,7 +26,7 @@ class userInfoItem(scrapy.Item):
     description = scrapy.Field()
     verified_type = scrapy.Field()
     
-class sinaWblogItem(scrapy.Item):
+class mblogItem(scrapy.Item):
     # 新浪用户所有微博
     uid = scrapy.Field()
     mid = scrapy.Field()
@@ -43,6 +43,18 @@ class sinaWblogItem(scrapy.Item):
     hasGif = scrapy.Field()
     hasOutlink = scrapy.Field()
     created_timestamp = scrapy.Field()
+    crawl_timestamp = scrapy.Field()
+
+class commentItem(scrapy.Item):
+    # 评论
+    uid = scrapy.Field()
+    cid = scrapy.Field()
+    mid = scrapy.Field()
+    reply_id = scrapy.Field()
+    text = scrapy.Field()
+    source = scrapy.Field()
+    like_counts = scrapy.Field()
+    created_at = scrapy.Field()
     crawl_timestamp = scrapy.Field()
 
 #----------list-------------
