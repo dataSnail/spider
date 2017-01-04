@@ -11,11 +11,11 @@ REDIS_PORT = 6379
 #redis 密码
 REDIS_PASSWD = 'redis123'
 #mysql 服务器地址
-MYSQL_SERVER_IP = '223.3.94.211'
+MYSQL_SERVER_IP = '223.3.75.216'
 #mysql 服务器用户名
 MYSQL_USERNAME = 'root'
 #mysql 服务器密码
-MYSQL_PWD = 'root'
+MYSQL_PWD = 'root@123'
 
 #----------------代理------------------#
 ABU_PROXY_HOST = 'proxy.abuyun.com'

@@ -26,7 +26,7 @@ class userInfoItem(scrapy.Item):
     description = scrapy.Field()
     verified_type = scrapy.Field()
     
-class mblogItem(scrapy.Item):
+class sinaMblogItem(scrapy.Item):
     # 新浪用户所有微博
     uid = scrapy.Field()
     mid = scrapy.Field()
@@ -45,7 +45,7 @@ class mblogItem(scrapy.Item):
     created_timestamp = scrapy.Field()
     crawl_timestamp = scrapy.Field()
 
-class commentItem(scrapy.Item):
+class sinaCommentItem(scrapy.Item):
     # 评论
     uid = scrapy.Field()
     cid = scrapy.Field()
@@ -77,7 +77,7 @@ class userInfoItemLs(object):
     descriptionLs =  []
     verified_typeLs =  []
     
-class sinaWblogItemLs(scrapy.Item):
+class sinaMblogItemLs(scrapy.Item):
     # 新浪用户所有微博
     uidLs = []
     midLs = []

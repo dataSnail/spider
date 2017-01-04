@@ -5,7 +5,7 @@
 from seuSpider.scrapy_redis_seu.spiders import RedisSpider
 from scrapy import Request
 
-from seuSpider.items.items import SinaCommentItem
+from seuSpider.items.sinaItems import sinaCommentItem
 
 import re
 import json
@@ -56,7 +56,7 @@ class CommentSpider(RedisSpider):
         try:
             # mod/pagelist表示当前页有评论内容
             if render_data['mod_type'] == 'mod/pagelist':
-                item = SinaCommentItem()  # 微博评论
+                item = sinaCommentItem()  # 微博评论
                 self.init_item(item)
                 mid = re.findall(self.pattern_num, response.url)[0]
                 for comment in render_data['card_group']:

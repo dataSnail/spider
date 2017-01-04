@@ -3,8 +3,19 @@
 Created on 2016年12月22日
 
 @author: MQ
+电影：长评、短评、长评和短评人信息
+用户：关注、粉丝、小组、广播、书影音
+小组：成员
 '''
 import scrapy
+
+class relationItem(scrapy.Item):
+    """豆瓣好友关系
+    """
+    #用户id
+    uid = scrapy.Field()
+    #用户关注者id
+    fid = scrapy.Field()
 
 class shortCommentItem(scrapy.Item):
     """短评Item
@@ -22,24 +33,6 @@ class shortCommentItem(scrapy.Item):
     #短评时间
     create_time = scrapy.Field()
 
-
-class shortCommentItemLs(object):
-    """短评Item 列表
-    +++封装 传递给pipeline
-    """
-    #短评人ID
-    cuidLs = []
-    #短评ID
-    commentIdLs = []
-    #短评内容
-    commentLs = []
-    #电影评分count,max,value
-    ratingLs = []
-    #短评点赞数目
-    vote_countLs = []
-    #短评时间
-    create_timeLs = []
-    
 
 class userItem(scrapy.Item):
     """用户信息Item
@@ -73,9 +66,6 @@ class userItem(scrapy.Item):
     #性别
     gender = scrapy.Field()
 
-
-"""影评Item和影评ItemLs
-"""
 class reviewItem(scrapy.Item):
     """影评Item
     """
@@ -100,27 +90,87 @@ class reviewItem(scrapy.Item):
     
     comments_count = scrapy.Field()
 
+#----- Ls封装 传递给pipeline----------
+class relationItemLs(object):
+    """豆瓣好友关系
+    """
+    def __init__(self):
+        #用户id
+        self.uidLs = []
+        #用户关注者id
+        self.fidLs = []
+    
+class shortCommentItemLs(object):
+    """短评Item 列表
+    """
+    def __init__(self):
+        #短评人ID
+        self.cuidLs = []
+        #短评ID
+        self.commentIdLs = []
+        #短评内容
+        self.commentLs = []
+        #电影评分count,max,value
+        self.ratingLs = []
+        #短评点赞数目
+        self.vote_countLs = []
+        #短评时间
+        self.create_timeLs = []
+    
 class reviewItemLs(object):
     """影评Item 列表
-    +++封装 传递给pipeline
     """
-    #影评人ID
-    cuidLs = []
-    #影评ID
-    reviewIdLs = []
-    #影评标题
-    titleLs = []
-    #影评评分count,max,value
-    ratingLs = []
-    #影评有用数目
-    useful_countLs = []
-    #影评点赞数目
-    likers_countLs = []
-    #影评点赞数目
-    vote_statusLs = []
-    #影评无用数量
-    useless_countLs = []
-    #影评时间
-    create_timeLs = []
+    def __init__(self):
+        #影评人ID
+        self.cuidLs = []
+        #影评ID
+        self.reviewIdLs = []
+        #影评标题
+        self.titleLs = []
+        #影评评分count,max,value
+        self.ratingLs = []
+        #影评有用数目
+        self.useful_countLs = []
+        #影评点赞数目
+        self.likers_countLs = []
+        #影评点赞数目
+        self.vote_statusLs = []
+        #影评无用数量
+        self.useless_countLs = []
+        #影评时间
+        self.create_timeLs = []
+        
+        self.comments_countLs = []
     
-    comments_countLs = []
+class userItemLs(object):
+    """用户信息Item
+    """
+    def __init__(self):
+        #用户数字Id
+        self.unidLs = []
+        #用户名id
+        self.uidLs = []
+        #关注数
+        self.following_countLs = []
+        #介绍
+        self.introLs = []
+        #note数量
+        self.note_countLs = []
+        #位置信息
+        self.locLs = []
+        #注册时间
+        self.reg_timeLs = []
+        #加入小组数
+        self.joined_group_countLs = []
+        #粉丝数
+        self.followers_countLs = []
+        #状态数目
+        self.statuses_countLs = []
+        #
+        self.group_chat_countLs = []
+        #生日
+        self.birthdayLs = []
+        #屏显名字
+        self.nameLs = []
+        #性别
+        self.genderLs = []

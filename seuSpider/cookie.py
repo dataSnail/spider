@@ -40,7 +40,7 @@ def initCookie(rconn, spiderName):
                 rconn.set("%s:Cookies:%s--%s" % (spiderName, weibo[0], weibo[1]), cookie)
 #     cookie = getCookie(weiboId[0][0], weiboId[0][1])
 #     print cookie
-    cookieNum = "".join(rconn.keys()).count("douban_relations:Cookies")
+    cookieNum = "".join(rconn.keys()).count("spider_main:Cookies")
     logger.warning("The num of the cookies is %s" % cookieNum)
     if cookieNum == 0:
         logger.warning('Stopping...')
@@ -63,7 +63,7 @@ def updateCookie(accountText, rconn, spiderName):
 def removeCookie(accountText, rconn, spiderName):
     """ 删除某个账号的Cookie """
     rconn.delete("%s:Cookies:%s" % (spiderName, accountText))
-    cookieNum = "".join(rconn.keys()).count("SinaSpider:Cookies")
+    cookieNum = "".join(rconn.keys()).count("spider_main:Cookies")
     logger.warning("The num of the cookies left is %s" % cookieNum)
     if cookieNum == 0:
         logger.warning('Stopping...')

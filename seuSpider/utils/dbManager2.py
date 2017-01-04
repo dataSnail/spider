@@ -5,38 +5,36 @@ Created on 2016年10月3日
 @author: MQ
 '''
 import MySQLdb
-import logging
 
 class dbManager2():
-    def __init__(self,host='223.3.75.216',user='root',passwd='root@123',port=3306,charset='utf8'):
-        self.host = host
-        self.user = user
-        self.passwd = passwd
-        self.port = port
-        self.charset = charset
-        self.conn = None
-        self.cur = None
+    def __init__(self,dbname,host='223.3.75.216',user='root',passwd='root@123',port=3306,charset='utf8'):
+        self.__host = host
+        self.__user = user
+        self.__passwd = passwd
+        self.__port = port
+        self.__charset = charset
+        self.__conn=MySQLdb.connect(host=self.__host,user=self.__user,passwd=self.__passwd,port=self.__port,charset=self.__charset)
+        self.__conn.select_db(dbname)
+        self.__cur = self.__conn.cursor()
     
-    def get_cur(self,dbname):
-        try:
-            self.conn=MySQLdb.connect(host=self.host,user=self.user,passwd=self.passwd,port=self.port,charset=self.charset)
-            self.cur = self.conn.cursor()
-            self.conn.select_db(dbname)
-        except Exception as e:
-            logging.error(e)
-        return self.cur
+    def executeSelect(self,sql):
+        self.__cur.execute(sql)
+        resultLs = self.__cur.fetchall()
+        return resultLs
     
-    
-    
+    def execute(self,sql):
+        self.__cur.execute(sql)
+        self.__conn.commit()
+
+    def executemany(self,sql,values):
+        self.__cur.executemany(sql,values)
+        self.__conn.commit()
+
     def release(self):
         if self.cur != None:
             self.cur.close()
         if self.conn != None:
             self.conn.close()
-    
-    def commit(self):
-        if self.conn != None:
-            self.conn.commit()
             
             
 if __name__ == '__main__':
@@ -75,9 +73,6 @@ if __name__ == '__main__':
     a = []
     import time
     while 1:
-        db = dbManager2()
-        cur =dbManager2().get_cur('douban')
-        cur.execute('select * from comments')
-        a.append(db)
-        print len(a)
+        db = dbManager2(dbname="douban")
+        print db.executeSelect('select * from comments3541415')
         time.sleep(1)

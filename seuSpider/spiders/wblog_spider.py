@@ -4,9 +4,9 @@
 
 from seuSpider.scrapy_redis_seu.spiders import RedisSpider
 from scrapy import Request
-from seuSpider.items.items import SinaWblogItem
-from seuSpider.items.items import SinaUserItem
-from seuSpider.items.items import SinaAllJsonItem
+from seuSpider.items.sinaItems import sinaMblogItem
+from seuSpider.items.sinaItems import userInfoItem
+# from seuSpider.items.sinaItems import SinaAllJsonItem
 
 import re
 import json
@@ -52,10 +52,10 @@ class WblogSpider(RedisSpider):
         try:
             # mod/pagelist表示当前页有微博内容
             if render_data['cards'][0]['mod_type'] == 'mod/pagelist':
-                item = SinaWblogItem()  # 微博内容
+                item = sinaMblogItem()  # 微博内容
                 self.init_item(item)
 
-                jItem = SinaAllJsonItem()  # 微博所有json内容
+                jItem = ""#SinaAllJsonItem()  # 微博所有json内容
                 jItem['uid'] = []
                 jItem['allJson'] = []
 
@@ -64,12 +64,12 @@ class WblogSpider(RedisSpider):
                     if 'retweeted_status' in mblog.keys():
                         # 如果有原微博，那么也要保存下来
                         if 'deleted' in mblog['retweeted_status']:
-                            dItem = SinaWblogItem()  # 被删除的微博内容
+                            dItem = sinaMblogItem()  # 被删除的微博内容
                             self.init_item(dItem)
                             self.fill_dItem(dItem,mblog['retweeted_status'])
                             yield dItem
                         else:
-                            reItem = SinaWblogItem()
+                            reItem = sinaMblogItem()
                             self.init_item(reItem)
                             self.fill_item(reItem, mblog['retweeted_status'])
                             yield reItem
@@ -82,13 +82,13 @@ class WblogSpider(RedisSpider):
                             jItem['allJson'].append(mblog['retweeted_status'])
 
                             # 并且原微博的作者也要保存
-                            uItem = SinaUserItem()  # 原微博的作者
+                            uItem = userInfoItem()  # 原微博的作者
                             self.fill_uItem(uItem, mblog['retweeted_status']['user'])
                             yield uItem
 
                     # 当前用户的微博
                     if 'deleted' in mblog:
-                        dItem = SinaWblogItem()
+                        dItem = sinaMblogItem()
                         self.init_item(dItem)
                         self.fill_dItem(dItem,mblog)
                         yield dItem

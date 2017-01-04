@@ -4,15 +4,18 @@ Created on 2016年12月30日
 
 @author: MQ
 '''
-from seuSpider.items.doubanItems import shortCommentItem,shortCommentItemLs
-from seuSpider.items.doubanItems import reviewItem,reviewItemLs
+import re
+from seuSpider.items.doubanItems import shortCommentItem,shortCommentItemLs,\
+    relationItem, relationItemLs,\
+    reviewItem,reviewItemLs,\
+    userItem,userItemLs
 import logging
 
 class doubanHandler(object):
     """
     """
     def __init__(self):
-        print '-----doubanHandler starting--------'
+        pass
     
     
     def commentHandler(self,json_data):
@@ -75,21 +78,88 @@ class doubanHandler(object):
         item["create_time"] = itemLs.create_timeLs
         return item
     
+    def relationHandler(self,json_data,url):
+        """豆瓣用户关注关系 夹带 用户信息
+        """
+        logging.info(url)
+        item = relationItem()
+        itemLs = relationItemLs()
+        
+        uitem = userItem()
+        uitemLs = userItemLs()
+        
+        extract_uid = re.findall("user/(.+)/following",url)#url相关
+        itemLs.uidLs.append(int(extract_uid[0]))
+        for user in json_data['users']:
+            itemLs.fidLs.append(int(user['id']))
+            
+            uitemLs.uidLs.append(user['id'])
+            uitemLs.unidLs.append(user['uid'])
+            if user['loc'] == None:
+                uitemLs.locLs.append('Null')
+            else:
+                uitemLs.locLs.append(user['loc']['id']+','+user['loc']['name']+','+user['loc']['uid'])
+            uitemLs.nameLs.append(user['name'])
+            if user['gender'] == '':
+                uitemLs.genderLs.append('Null')
+            else:
+                uitemLs.genderLs.append(user['gender'])
+            uitemLs.introLs.append(user['abstract'].strip())
+            uitemLs.followers_countLs.append(user['followers_count'])
+        
+        item['uid'] = itemLs.uidLs
+        item['fid'] = itemLs.fidLs
+        
+        uitem['uid'] = uitemLs.uidLs
+        uitem['unid'] = uitemLs.unidLs
+        uitem['loc'] = uitemLs.locLs
+        uitem['name'] = uitemLs.nameLs
+        uitem['gender'] = uitemLs.genderLs
+        uitem['intro'] = uitemLs.introLs
+        uitem['followers_count'] = uitemLs.followers_countLs
+
+        return item,uitem
+#---------- ------------
     def commentDBHandler(self,cur,item):
+        """豆瓣短评数据库处理函数
+        """
         commentSql = 'insert ignore into comments (cuid,commentId,comment,rating,vote_count,create_time,insert_time) values(%s,%s,%s,%s,%s,%s,now())'
         try:
             for i in range(len(item["cuid"])):
-                cur.execute(commentSql,(int(item['cuid'][i]),int(item["commentId"][i]),item["comment"][i],item["rating"][i],int(item["vote_count"][i]),item["create_time"][i]))
+                cur.execute(commentSql,(int(item['cuid'][i]),int(item['commentId'][i]),item['comment'][i],item['rating'][i],int(item['vote_count'][i]),item['create_time'][i]))
         except Exception as e:
             logging.error('DBError---->uidList::'+str(item['cuid'][0])+' did not insert into table')
             logging.error(e)
 
-    def reviewDBHandler(self,tx,item):
-        commentSql = 'insert ignore into reviews (cuid,rid,title,rating,useful_count,likers_count,vote_status,useless_count,comments_count,create_time,insert_time) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())'
+    def reviewDBHandler(self,cur,item):
+        """豆瓣长评数据库处理函数
+        """
+        reviewSql = 'insert ignore into reviews (cuid,rid,title,rating,useful_count,likers_count,vote_status,useless_count,comments_count,create_time,insert_time) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())'
         try:
-            for i in range(len(item["cuid"])):
-                tx.execute(commentSql,(int(item['cuid'][i]),int(item["reviewId"][i]),item["title"][i],item["rating"][i],int(item["useful_count"][i]),int(item["likers_count"][i]),int(item["vote_status"][i]),int(item["useless_count"][i]),int(item["comments_count"][i]),item["create_time"][i]))
+            for i in range(len(item['cuid'])):
+                cur.execute(reviewSql,(int(item['cuid'][i]),int(item['reviewId'][i]),item['title'][i],item['rating'][i],int(item['useful_count'][i]),int(item['likers_count'][i]),int(item['vote_status'][i]),int(item['useless_count'][i]),int(item['comments_count'][i]),item['create_time'][i]))
                 
         except Exception as e:
             logging.error('DBError---->uidList::'+str(item['cuid'][0])+' did not insert into table')
             logging.error(e)
+            
+    def relationDBHandler(self,cur,item):
+        """豆瓣用户关注关系数据库处理函数
+        """
+        relationSql = 'insert ignore into relations (uid,fid,insert_time) values (%s,%s,now())'
+        try:
+            for i in range(len(item['fid'])):
+                cur.execute(relationSql,(item['uid'][0],item['fid'][i]))
+        except Exception as e:
+            logging.error(e)
+    
+    def userDBHandler(self,cur,item):
+        """豆瓣用户信息数据库处理函数
+        """
+        userSql = "insert ignore into users (uid,unid,intro,loc,followers_count,name,gender) values (%s,%s,%s,%s,%s,%s,%s)"
+        try:
+            for i in range(len(item['uid'])):
+                cur.execute(userSql,(item['uid'][i],item['unid'][i],item['intro'][i],item['loc'][i],item['followers_count'][i],item['name'][i],item['gender'][i]))
+        except Exception as e:
+            print "ddd"
+            logging.error(e)    

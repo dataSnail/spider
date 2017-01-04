@@ -5,28 +5,28 @@ Created on 2016年12月30日
 @author: MQ
 '''
 # import sys
+import re
 import logging
 # import getopt
 import json
 from scrapy import Request
-from seuSpider.utils.dbManager2 import dbManager2
 from seuSpider.scrapy_redis_seu.spiders import RedisSpider
 # from seuSpiderHandlers.doubanHandler import doubanHandler
 from seuSpider.spiderHandlers.sinaHandler import sinaHandler
+from seuSpider.spiderHandlers.doubanHandler import doubanHandler
 
 class spiderWorker(RedisSpider):
     """运行第一个参数
     
     """
     name = 'spider_main'
-    redis_key = 'sina_frelation'#运行时需改变
+    redis_key = 'douban_frelation'#运行时需改变
     start_urls = []
-    conn = dbManager2()
     
     custom_settings={
         'ITEM_PIPELINES' : {
-            'seuSpider.pipelines.sinaPipeline': 300,
-#             'seuSpider.pipelines.doubanReviewPipeline': 300
+#             'seuSpider.pipelines.sinaPipeline': 300,
+            'seuSpider.pipelines.doubanPipeline': 300
                            },
         'DOWNLOADER_MIDDLEWARES' : {
             'seuSpider.ipproxy.middleware.UserAgentMiddleware': 543,
@@ -57,10 +57,18 @@ class spiderWorker(RedisSpider):
             #重新请求 ,返回到redis里面，设置优先级
             yield Request(response.url,meta={'dont_redirect': True},dont_filter=True,callback=self.parse)
         else:
-            item1,item2 = sinaHandler().userRelationHandler(json_data, response.url)
+#             item1,item2 = sinaHandler().userRelationHandler(json_data, response.url)
+#             yield item1
+#             yield item2
+#             yield doubanHandler().reviewHandler(json_data)
+            item1,item2 = doubanHandler().relationHandler(json_data,response.url)
             yield item1
             yield item2
-#             yield doubanHandler().reviewHandler(json_data)
+            extract_uid = re.findall("user/(.+)/following",response.url)#url相关
+            next_link = "https://m.douban.com/rexxar/api/v2/user/"+extract_uid[0]+"/following?start=%s&count=20&ck=&for_mobile=1"
+            if json_data["start"]+20<json_data["total"]:
+                yield Request(url=next_link%(json_data["start"]+20), callback=self.parse)
+            
 
     @staticmethod
     def close(spider, reason):
