@@ -89,7 +89,20 @@ class reviewItem(scrapy.Item):
     create_time = scrapy.Field()
     
     comments_count = scrapy.Field()
-
+    
+class doubanReviewCommentItem(scrapy.Item):
+    """豆瓣影评的回应Item
+    +++由于关于某个影评的回应都在同一个影评id下，所以默认回应的回应都在爬取的范围内，不再重新进行爬取，只记录id
+    """
+    #回应id
+    rcid = scrapy.Field()
+    #回应的回复
+    rrcid = scrapy.Field()
+    #回应文本
+    text = scrapy.Field()
+    #回应时间
+    create_time = scrapy.Field()
+    
 #----- Ls封装 传递给pipeline----------
 class relationItemLs(object):
     """豆瓣好友关系
@@ -174,3 +187,17 @@ class userItemLs(object):
         self.nameLs = []
         #性别
         self.genderLs = []
+        
+class doubanReviewCommentItemLs(object):
+    """豆瓣影评的回应Item
+    """
+    def __init__(self):
+        #回应id
+        self.rcidLs = []
+        #回应的回复
+        self.rrcidLs = []
+        #回应文本
+        self.textLs = []
+        #回应时间
+        self.create_timeLs = []
+        

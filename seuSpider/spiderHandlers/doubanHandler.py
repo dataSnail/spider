@@ -8,7 +8,7 @@ import re
 from seuSpider.items.doubanItems import shortCommentItem,shortCommentItemLs,\
     relationItem, relationItemLs,\
     reviewItem,reviewItemLs,\
-    userItem,userItemLs
+    userItem,userItemLs, doubanReviewCommentItem, doubanReviewCommentItemLs
 import logging
 
 class doubanHandler(object):
@@ -119,6 +119,53 @@ class doubanHandler(object):
         uitem['followers_count'] = uitemLs.followers_countLs
 
         return item,uitem
+    
+    def reviewCommentHandler(self,json_data):
+        """豆瓣影评的评论（回应）夹带 相关用户
+        """
+        item = doubanReviewCommentItem()
+        itemLs = doubanReviewCommentItemLs()
+        
+        uitem = userItem()
+        uitemLs = userItemLs()
+        
+        for reviewComment in json_data['comments']:
+            itemLs.rcidLs.append(reviewComment['id'])
+            if reviewComment['ref_comment'] == None:
+                itemLs.rrcidLs.append("Null")
+            else:
+                itemLs.rrcidLs.append(reviewComment['ref_comment']['id'])
+            itemLs.textLs.append(reviewComment['text'])
+            itemLs.create_timeLs.append(reviewComment['create_time'])
+            
+            #用户信息封装
+            uitemLs.uidLs.append(reviewComment['author']['id'])
+            uitemLs.unidLs.append(reviewComment['author']['uid'])
+            if reviewComment['author']['loc'] == None:
+                uitemLs.locLs.append('Null')
+            else:
+                uitemLs.locLs.append(reviewComment['author']['loc']['id']+','+reviewComment['author']['loc']['name']+','+reviewComment['author']['loc']['uid'])
+            uitemLs.nameLs.append(reviewComment['author']['name'])
+            if reviewComment['author']['gender'] == '':
+                uitemLs.genderLs.append('Null')
+            else:
+                uitemLs.genderLs.append(reviewComment['author']['gender'])
+            uitemLs.introLs.append(reviewComment['author']['abstract'].strip())
+        
+        item['rcid'] = itemLs.rcidLs
+        item['rrcid'] = itemLs.rrcidLs
+        item['text'] = itemLs.textLs
+        item['create_time'] = itemLs.create_timeLs
+        
+        uitem['uid'] = uitemLs.uidLs
+        uitem['unid'] = uitemLs.unidLs
+        uitem['loc'] = uitemLs.locLs
+        uitem['name'] = uitemLs.nameLs
+        uitem['gender'] = uitemLs.genderLs
+        uitem['intro'] = uitemLs.introLs
+        
+        return item,uitem
+        
 #---------- ------------
     def commentDBHandler(self,cur,item):
         """豆瓣短评数据库处理函数
@@ -161,5 +208,13 @@ class doubanHandler(object):
             for i in range(len(item['uid'])):
                 cur.execute(userSql,(item['uid'][i],item['unid'][i],item['intro'][i],item['loc'][i],item['followers_count'][i],item['name'][i],item['gender'][i]))
         except Exception as e:
-            print "ddd"
-            logging.error(e)    
+            logging.error(e)
+    def reviewCommentDBHandler(self,cur,item):
+        """豆瓣用户影评评论（回应）数据库处理函数
+        """
+        reviewCommentSql = "insert ignore into reviewComment (rid,rrid,text,create_time) values (%s,%s,%s,%s,%s,%s,%s)"
+        try:
+            for i in range(len(item['rrid'])):
+                cur.execute(reviewCommentSql,(item['rid'][i],item['rrid'][i],item['text'][i],item['create_time'][i]))
+        except Exception as e:
+            logging.error(e)

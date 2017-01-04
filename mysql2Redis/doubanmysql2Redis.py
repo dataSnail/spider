@@ -21,20 +21,30 @@ class doubanmysql2Redis():
             time.sleep(1800)
     
     def comment2Redis(self):
+        """豆瓣短评
+        """
         for i in xrange(0,4720,25):
-            self.__redisDb.rpush('douban_frelation','https://m.douban.com/rexxar/api/v2/movie/3541415/interests?count=20&start=%s'%i)
+            self.__redisDb.rpush('douban_comment','https://m.douban.com/rexxar/api/v2/movie/3541415/interests?count=20&start=%s'%i)
             
     def review2Redis(self):
+        """豆瓣影评
+        """
         for i in xrange(0,4720,25):
             self.__redisDb.rpush('douban_reviews','https://m.douban.com/rexxar/api/v2/movie/3541415/reviews?count=25&start=%s&ck=&for_mobile=1'%i)
     
     def relation2Redis(self):
+        """豆瓣关注关系
+        """
         selectSql = "select uid from userflag where flag = 0"
         tupleLs = self.__db.executeSelect(selectSql)
         for t in tupleLs:
             self.__redisDb.rpush('douban_frelation','https://m.douban.com/rexxar/api/v2/user/%s/following?start=0&count=20&ck=&for_mobile=1'%t[0])
 #             print 'https://m.douban.com/rexxar/api/v2/user/%s/following?start=0&count=20&ck=&for_mobile=1'%t[0]
-   
+    def reviewComment2Redis(self):
+        """影评回应url
+        """
+        for i in xrange(0,4720,25):
+            self.__redisDb.rpush('douban_reviewComment','https://m.douban.com/rexxar/api/v2/review/3447868/comments?count=25&start=%s%s&ck=&for_mobile=1'%i)
 if __name__ == '__main__':
     a = doubanmysql2Redis()
     a.relation2Redis()
