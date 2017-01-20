@@ -4,7 +4,8 @@ from seuSpider.spiderHandlers.sinaHandler import sinaHandler
 from seuSpider.items.sinaItems import userInfoItem,userRelationItem,sinaMblogItem,sinaCommentItem
 from seuSpider.spiderHandlers.doubanHandler import doubanHandler
 from seuSpider.items.doubanItems import shortCommentItem, reviewItem,\
-    relationItem, userItem
+    relationItem, userItem,doubanReviewCommentItem
+from seuSpider.items.doubanItems import userInfoItem as doubanUserInfoItem
 
 class sinaPipeline(object):
     __sinaHandlerInstance = sinaHandler()
@@ -38,5 +39,9 @@ class doubanPipeline(object):
             self.__dbpool.runInteraction(self.__doubanHandlerInstance.relationDBHandler,item)
         if item.__class__ == userItem:
             self.__dbpool.runInteraction(self.__doubanHandlerInstance.userDBHandler,item)
+        if item.__class__ == doubanUserInfoItem:
+            self.__dbpool.runInteraction(self.__doubanHandlerInstance.userInfoDBHandler, item)
+        if item.__class__ == doubanReviewCommentItem:
+            self.__dbpool.runInteraction(self.__doubanHandlerInstance.reviewCommentDBHandler,item)
         return item
 

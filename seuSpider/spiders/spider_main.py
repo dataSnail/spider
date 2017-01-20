@@ -20,7 +20,7 @@ class spiderWorker(RedisSpider):
     
     """
     name = 'spider_main'
-    redis_key = 'douban_frelation'#运行时需改变
+    redis_key = 'douban_reviewComment'#运行时需改变
     start_urls = []
     
     custom_settings={
@@ -60,16 +60,30 @@ class spiderWorker(RedisSpider):
 #             item1,item2 = sinaHandler().userRelationHandler(json_data, response.url)
 #             yield item1
 #             yield item2
+            #----------------------------------------------------------------
 #             yield doubanHandler().reviewHandler(json_data)
-            item1,item2 = doubanHandler().relationHandler(json_data,response.url)
-            yield item1
-            yield item2
-            extract_uid = re.findall("user/(.+)/following",response.url)#url相关
-            next_link = "https://m.douban.com/rexxar/api/v2/user/"+extract_uid[0]+"/following?start=%s&count=20&ck=&for_mobile=1"
-            if json_data["start"]+20<json_data["total"]:
-                yield Request(url=next_link%(json_data["start"]+20), callback=self.parse)
+    
+            #----------------------------------------------------------------
+#             item1 = doubanHandler().relationHandler(json_data,response.url)
+#             yield item1
+# #             yield item2
+#             extract_uid = re.findall("user/(.+)/followers",response.url)#url相关
+#             next_link = "https://m.douban.com/rexxar/api/v2/user/"+extract_uid[0]+"/followers?start=%s&count=20&ck=&for_mobile=1"
+#             if json_data["start"]+20<json_data["total"]:
+#                 yield Request(url=next_link%(json_data["start"]+20), callback=self.parse)
+            #------------------------------------------------------------------------------
+#             item = doubanHandler().userInfoHandler(json_data)
+#             yield item
+            #------------------------------------------------------------------------------
             
-
+            item = doubanHandler().reviewCommentHandler(json_data,response.url)
+            yield item
+            extract_rid = re.findall("review/(.+)/comments",response.url)#url相关
+            next_link = "https://m.douban.com/rexxar/api/v2/review/"+extract_rid[0]+"/comments?count=25&start=%s&ck=&for_mobile=1"
+            if json_data["start"]+25<json_data["total"]:
+                yield Request(url=next_link%(json_data["start"]+25), callback=self.parse)
+                
+                
     @staticmethod
     def close(spider, reason):
         logging.error('Spider closed ==========================================>'+str(reason))
