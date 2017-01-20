@@ -38,8 +38,8 @@ class sinaHandler(object):
             if json_data['count'] == None or json_data['count'] == 0 or str(json_data['count'])=='':
                 logging.info('uid::::::'+str(urItem['uid'])+'at page :::'+str(url)+'have no information---------------------------!!!!!write file...')
                 #方案1：单独写一个文件之后处理；方案2：push到redis里面，重新做此url；方案3：循环请求，yield request；
-                with open('noInfomationUrls.txt','a') as file:
-                    file.write("rpush frelation:start_urls "+str(url)+'\n')
+                with open('noInfomationUrls.txt','a') as filee:
+                    filee.write("rpush frelation:start_urls "+str(url)+'\n')
             else:
                 for card in json_data['cards']:
         #             userLs.append(str(self.user_list[self.user_current_index]))
@@ -86,10 +86,10 @@ class sinaHandler(object):
         """
         try:
             for i in range(len(item['fid'])):
-                f_sql = 'insert ignore into frelation_0 (uid,fid,insert_time) values(%s,%s,now())'
-    #                 s_sql = 'insert ignore into scra_flags_2 (uid) values(%s)'
+                f_sql = 'insert ignore into frelation_'+str(long(item['uid'][0])%1000)+' (uid,fid,insert_time) values(%s,%s,now())'
+                s_sql = 'insert ignore into scra_flags_4 (uid) values(%s)'
                 cur.execute(f_sql,(item['uid'][0],item['fid'][i]))
-    #                 tx.execute(s_sql,(item['fid'][i],))
+                cur.execute(s_sql,(item['fid'][i],))
         except Exception as e:
 #             logging.error('DBError---->uidList::'+str(item['uid'][0])+' and fidList::'+str(item['fid'])+'did not insert into table')
             logging.error(e)
@@ -100,13 +100,13 @@ class sinaHandler(object):
         try:
             for i in range(len(item['uid'])):
     #                 tableLs.append(str(thash().uhash(uItem['uid'][i],200)))
-                user_info_sql = 'insert ignore into userinfo_0 (uid,screen_name,profile_image_url,statuses_count,verified,verified_reason,description,verified_type,gender,mbtype,ismember,fansNum,insert_time) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())'
+                user_info_sql = 'insert ignore into userinfo_'+str(long(item['uid'][i])%200)+' (uid,screen_name,profile_image_url,statuses_count,verified,verified_reason,description,verified_type,gender,mbtype,ismember,fansNum,insert_time) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())'
                 user_info_tuple =(item['uid'][i],item['scree_name'][i],item['profile_img_url'][i],item['status_count'][i],item['verified'][i],item['verified_reason'][i],\
                 item['description'][i],item['verified_type'][i],item['gender'][i],item['mbtype'][i],item['mbrank'][i],item['followers_count'][i])
                 cur.execute(user_info_sql,user_info_tuple)
     #             logging.info('userinfo_'+','.join(tableLs)+' is inserting.....|||||')
         except Exception as e:
-    #             logging.error('DBError---->userInfo::'+str(uItem['uid'])+' did not insert into table'+','.join(tableLs))
+#             logging.error('DBError---->userInfo::'+str(item['uid'])+' did not insert into table'+','.join(tableLs))
             logging.error(e)
             
     def sinaMblogDBHandler(self, cur, item):

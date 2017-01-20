@@ -7,7 +7,7 @@ Created on 2016年10月3日
 import MySQLdb
 
 class dbManager2():
-    def __init__(self,dbname,host='223.3.75.216',user='root',passwd='root@123',port=3306,charset='utf8'):
+    def __init__(self,dbname,host='223.3.75.180',user='root',passwd='root@123',port=3306,charset='utf8'):
         self.__host = host
         self.__user = user
         self.__passwd = passwd
@@ -70,9 +70,12 @@ if __name__ == '__main__':
 #         print 'end=======================================>'
 #     db.release()
 #     print result_list
-    a = []
-    import time
-    while 1:
-        db = dbManager2(dbname="douban")
-        print db.executeSelect('select * from comments3541415')
-        time.sleep(1)
+#     a = []
+#     import time
+#     while 1:
+#         db = dbManager2(dbname="douban")
+#         print db.executeSelect('select * from comments3541415')
+#         time.sleep(1)
+
+    db = dbManager2(dbname="sina")
+    print db.executeSelect("select 1 ")

@@ -9,7 +9,7 @@ Created on 2016年12月22日
 '''
 import scrapy
 
-class relationItem(scrapy.Item):
+class doubanRelationItem(scrapy.Item):
     """豆瓣好友关系
     """
     #用户id
@@ -17,7 +17,7 @@ class relationItem(scrapy.Item):
     #用户关注者id
     fid = scrapy.Field()
 
-class shortCommentItem(scrapy.Item):
+class doubanShortCommentItem(scrapy.Item):
     """短评Item
     """
     #短评人ID
@@ -34,7 +34,7 @@ class shortCommentItem(scrapy.Item):
     create_time = scrapy.Field()
 
 
-class userItem(scrapy.Item):
+class doubanUserItem(scrapy.Item):
     """用户信息Item
     """
     #用户数字Id
@@ -66,7 +66,7 @@ class userItem(scrapy.Item):
     #性别
     gender = scrapy.Field()
 
-class userInfoItem(scrapy.Item):
+class doubanUserInfoItem(scrapy.Item):
     """用户详细信息
     """
     #用户数字id
@@ -125,7 +125,7 @@ class userInfoItem(scrapy.Item):
     is_normal = scrapy.Field()
 
 
-class reviewItem(scrapy.Item):
+class doubanReviewItem(scrapy.Item):
     """影评Item
     """
     #影评人ID

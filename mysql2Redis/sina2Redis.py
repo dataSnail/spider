@@ -6,9 +6,10 @@ Created on 2016年10月1日
 '''
 import sys
 sys.path.append('../')
+
+from seuSpider.utils.dbManager2 import dbManager2
 from seuSpider.utils import r2mConfig
 from seuSpider.ipproxy.agents import HEADER
-from seuSpider.utils import dbManager2
 import urllib2
 import json
 import time
@@ -28,14 +29,15 @@ class mysql2Redis():
               "pass" : r2mConfig.ABU_PROXY_PWD,
             }
         #选择使用代理
-        self.__enable_proxy = True
-        self.__url = 'http://m.weibo.cn/page/json?containerid=100505%s_-_FOLLOWERS&page=%s'
+        self.__enable_proxy = False
+#         self.__url = 'http://m.weibo.cn/page/json?containerid=100505%s_-_FOLLOWERS&page=%s'
+        self.__url = 'http://m.weibo.cn/container/getSecond?containerid=100505%s_-_FOLLOWERS&page=%s'#2017.1.20 new url
         #数据库连接不上，停止运行程序30min = 1800s
         try:
-            self.__db = dbManager2(dbname='sina')
+            self.__db = dbManager2(dbname="sina")
             self.__redisDb = redis.Redis(host=r2mConfig.REDIS_SERVER_IP,port= r2mConfig.REDIS_PORT,db=0,password=r2mConfig.REDIS_PASSWD)
         except Exception as e:
-            logging.error('Exception in __init__ e:::::%s  and sleep at :::%s-----1800s'%(str(e),time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))))
+            logging.error('Exception in __init__ :::::%s  and sleep at :::%s-----1800s'%(str(e),time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))))
             time.sleep(1800)
 
     def get_uidLs_from_mysql(self):
@@ -52,10 +54,12 @@ class mysql2Redis():
     def get_max_page(self,uid):
         maxPage = -1
         maxPageUrl = self.__url%(uid,1)
+        print self.__url%(uid,1)
         #构建request 方便加入内容
         if self.__mark403:#上次请求有403错误，此次请求代理换ip
             HEADER['Proxy-Switch-Ip'] = "yes"
             self.__mark403 = False
+            
         request = urllib2.Request(maxPageUrl,headers = HEADER)
         try:
             proxy_handler = urllib2.ProxyHandler({"http" : self.__proxyMeta,'https':self.__proxyMeta})
@@ -77,6 +81,7 @@ class mysql2Redis():
             logging.error('Exception in function::: get_max_page(url error) uid=%s-------------------->%s'%(uid,str(e)))
         else:
             try:
+#                 temstr = response.read()
                 decodejson = json.loads(response.read())#之前不能有print函数
             except Exception as e:
                 logging.error('Exception in function::: get_max_page(json data error) uid=%s------------------->%s'%(uid,str(e)))
@@ -146,14 +151,15 @@ class mysql2Redis():
 
 if __name__ == '__main__':
 #     print '------running------'
-    if len(sys.argv)==2:
-        if int(sys.argv[1])>=0 and int(sys.argv[1])<=10:
-            a = mysql2Redis()
-            while 1:
-                a.fill_url_to_redis()
-                time.sleep(int(sys.argv[1]))
-    else:
-        print 'use  "python '+sys.argv[0]+' [second]" to start!'
+#     if len(sys.argv)==2:
+#         if int(sys.argv[1])>=0 and int(sys.argv[1])<=10:
+#             a = mysql2Redis()
+#             while 1:
+#                 a.fill_url_to_redis()
+#                 time.sleep(int(sys.argv[1]))
+#     else:
+#         print 'use  "python '+sys.argv[0]+' [second]" to start!'
 #     print '--------end-----------'
-#     a = mysql2Redis()
+    a = mysql2Redis()
+    a.fill_url_to_redis()
 #     print a.get_redis_url_count("frealtion:start_urls") <10000

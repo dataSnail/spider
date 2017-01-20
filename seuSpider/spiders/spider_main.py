@@ -20,18 +20,18 @@ class spiderWorker(RedisSpider):
     
     """
     name = 'spider_main'
-    redis_key = 'douban_reviewComment'#运行时需改变
+    redis_key = 'frelation:start_urls'#运行时需改变
     start_urls = []
     
     custom_settings={
         'ITEM_PIPELINES' : {
-#             'seuSpider.pipelines.sinaPipeline': 300,
-            'seuSpider.pipelines.doubanPipeline': 300
+            'seuSpider.pipelines.sinaPipeline': 300,
+#             'seuSpider.pipelines.doubanPipeline': 300
                            },
         'DOWNLOADER_MIDDLEWARES' : {
             'seuSpider.ipproxy.middleware.UserAgentMiddleware': 543,
 #             'seuSpider.ipproxy.middleware.noProxyMiddleware':544,
-#             'seuSpider.ipproxy.middleware.CookiesMiddleware': 543
+            'seuSpider.ipproxy.middleware.CookiesMiddleware': 543
         }
     }
     def __init__(self, *args, **kwargs):
@@ -57,9 +57,9 @@ class spiderWorker(RedisSpider):
             #重新请求 ,返回到redis里面，设置优先级
             yield Request(response.url,meta={'dont_redirect': True},dont_filter=True,callback=self.parse)
         else:
-#             item1,item2 = sinaHandler().userRelationHandler(json_data, response.url)
-#             yield item1
-#             yield item2
+            item1,item2 = sinaHandler().userRelationHandler(json_data, response.url)
+            yield item1
+            yield item2
             #----------------------------------------------------------------
 #             yield doubanHandler().reviewHandler(json_data)
     
@@ -76,12 +76,12 @@ class spiderWorker(RedisSpider):
 #             yield item
             #------------------------------------------------------------------------------
             
-            item = doubanHandler().reviewCommentHandler(json_data,response.url)
-            yield item
-            extract_rid = re.findall("review/(.+)/comments",response.url)#url相关
-            next_link = "https://m.douban.com/rexxar/api/v2/review/"+extract_rid[0]+"/comments?count=25&start=%s&ck=&for_mobile=1"
-            if json_data["start"]+25<json_data["total"]:
-                yield Request(url=next_link%(json_data["start"]+25), callback=self.parse)
+#             item = doubanHandler().reviewCommentHandler(json_data,response.url)
+#             yield item
+#             extract_rid = re.findall("review/(.+)/comments",response.url)#url相关
+#             next_link = "https://m.douban.com/rexxar/api/v2/review/"+extract_rid[0]+"/comments?count=25&start=%s&ck=&for_mobile=1"
+#             if json_data["start"]+25<json_data["total"]:
+#                 yield Request(url=next_link%(json_data["start"]+25), callback=self.parse)
                 
                 
     @staticmethod

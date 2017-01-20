@@ -11,7 +11,7 @@ REDIS_PORT = 6379
 #redis 密码
 REDIS_PASSWD = 'redis123'
 #mysql 服务器地址
-MYSQL_SERVER_IP = '223.3.75.216'
+MYSQL_SERVER_IP = '223.3.75.180'
 #mysql 服务器用户名
 MYSQL_USERNAME = 'root'
 #mysql 服务器密码

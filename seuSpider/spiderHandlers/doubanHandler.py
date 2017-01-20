@@ -5,9 +5,9 @@ Created on 2016年12月30日
 @author: MQ
 '''
 import re
-from seuSpider.items.doubanItems import shortCommentItem,shortCommentItemLs,\
-    relationItem, relationItemLs,reviewItem,reviewItemLs,\
-    doubanReviewCommentItem, doubanReviewCommentItemLs,userInfoItem
+from seuSpider.items.doubanItems import doubanShortCommentItem,shortCommentItemLs,\
+    doubanRelationItem, relationItemLs,doubanReviewItem,reviewItemLs,\
+    doubanReviewCommentItem, doubanReviewCommentItemLs,doubanUserInfoItem
     
 # from seuSpider.items.doubanItems import userItem,userItemLs
 import logging
@@ -23,7 +23,7 @@ class doubanHandler(object):
         """豆瓣短评处理
         """
         print '-----commentHandler--------'
-        item = shortCommentItem()
+        item = doubanShortCommentItem()
         itemLs = shortCommentItemLs()
         
         for interest in json_data["interests"]:
@@ -49,7 +49,7 @@ class doubanHandler(object):
         """豆瓣影评处理
         """
         print '-----reviewHandler--------'
-        item = reviewItem()
+        item = doubanReviewItem()
         itemLs = reviewItemLs()
         
         for reviews in json_data["reviews"]:
@@ -83,7 +83,7 @@ class doubanHandler(object):
         """豆瓣用户关注关系 夹带 用户信息
         """
         logging.info(url)
-        item = relationItem()
+        item = doubanRelationItem()
         itemLs = relationItemLs()
         
 #         uitem = userItem()
@@ -176,7 +176,7 @@ class doubanHandler(object):
     def userInfoHandler(self,json_data):
         """处理豆瓣用户详细信息
         """
-        item = userInfoItem()
+        item = doubanUserInfoItem()
         
         item['id'] = json_data['id']
         item['uid'] = json_data['uid']
