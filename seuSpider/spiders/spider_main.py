@@ -20,13 +20,13 @@ class spiderWorker(RedisSpider):
     
     """
     name = 'spider_main'
-    redis_key = 'frelation:start_urls'#运行时需改变
+    redis_key = 'douban_film'#运行时需改变
     start_urls = []
     
     custom_settings={
         'ITEM_PIPELINES' : {
-            'seuSpider.pipelines.sinaPipeline': 300,
-#             'seuSpider.pipelines.doubanPipeline': 300
+#             'seuSpider.pipelines.sinaPipeline': 300,
+            'seuSpider.pipelines.doubanPipeline': 300
                            },
         'DOWNLOADER_MIDDLEWARES' : {
             'seuSpider.ipproxy.middleware.UserAgentMiddleware': 543,
@@ -57,9 +57,9 @@ class spiderWorker(RedisSpider):
             #重新请求 ,返回到redis里面，设置优先级
             yield Request(response.url,meta={'dont_redirect': True},dont_filter=True,callback=self.parse)
         else:
-            item1,item2 = sinaHandler().userRelationHandler(json_data, response.url)
-            yield item1
-            yield item2
+#             item1,item2 = sinaHandler().userRelationHandler(json_data, response.url)
+#             yield item1
+#             yield item2
             #----------------------------------------------------------------
 #             yield doubanHandler().reviewHandler(json_data)
     
@@ -82,6 +82,30 @@ class spiderWorker(RedisSpider):
 #             next_link = "https://m.douban.com/rexxar/api/v2/review/"+extract_rid[0]+"/comments?count=25&start=%s&ck=&for_mobile=1"
 #             if json_data["start"]+25<json_data["total"]:
 #                 yield Request(url=next_link%(json_data["start"]+25), callback=self.parse)
+
+
+            #--------------------------------------------------------------------------------
+#             item = doubanHandler().userGroupRelationHandler(json_data, response.url)
+#             yield item
+#             extract_rid = re.findall("user/(.+)/joined_groups",response.url)#url相关
+#             next_link = "https://m.douban.com/rexxar/api/v2/group/user/"+extract_rid[0]+"/joined_groups?start=%s&count=20&for_mobile=1"
+#             if json_data["start"]+20<json_data["total"]:
+#                 yield Request(url=next_link%(json_data["start"]+20), callback=self.parse)
+            #-------------------------------------------------------------
+            if len(json_data)>0:
+                logging.info(response.url)
+                item = doubanHandler().filmInfoHandler(json_data)
+                yield item
+                
+                extract_start = int(re.findall("start=(.+)&limit=15",response.url)[0])
+                extract_year = int(re.findall("tag\/(.+)\/\?type=movie",response.url)[0])
+                next_link = 'https://m.douban.com/j/tag/%s/?type=movie&start=%s&limit=15'
+                
+                if extract_start < 500:
+                    yield Request(url=next_link%(str(extract_year),str(extract_start+15)), callback=self.parse) 
+            else:
+                logging.info(response.url+"::no INFO")
+                
                 
                 
     @staticmethod

@@ -9,9 +9,9 @@ import MySQLdb.cursors
 
 class dbManager():
 
-    def __init__(self, my_db='sina'):
+    def __init__(self, my_db='douban'):
         self.__dbpool = adbapi.ConnectionPool('MySQLdb',
-                                            host = '223.3.75.180',
+                                            host = '223.3.75.216',
                                             db = my_db,
                                             user = 'root',
                                             passwd = 'root@123',

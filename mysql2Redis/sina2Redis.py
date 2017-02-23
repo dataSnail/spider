@@ -151,15 +151,15 @@ class mysql2Redis():
 
 if __name__ == '__main__':
 #     print '------running------'
-#     if len(sys.argv)==2:
-#         if int(sys.argv[1])>=0 and int(sys.argv[1])<=10:
-#             a = mysql2Redis()
-#             while 1:
-#                 a.fill_url_to_redis()
-#                 time.sleep(int(sys.argv[1]))
-#     else:
-#         print 'use  "python '+sys.argv[0]+' [second]" to start!'
+    if len(sys.argv)==2:
+        if int(sys.argv[1])>=0 and int(sys.argv[1])<=10:
+            a = mysql2Redis()
+            while 1:
+                a.fill_url_to_redis()
+                time.sleep(int(sys.argv[1]))
+    else:
+        print 'use  "python '+sys.argv[0]+' [second]" to start!'
 #     print '--------end-----------'
-    a = mysql2Redis()
-    a.fill_url_to_redis()
+#     a = mysql2Redis()
+#     a.fill_url_to_redis()
 #     print a.get_redis_url_count("frealtion:start_urls") <10000

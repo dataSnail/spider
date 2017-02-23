@@ -9,13 +9,63 @@ Created on 2016年12月22日
 '''
 import scrapy
 
+###2017.2.23 使用简单Item减免开发复杂性
+class doubanFilmItem(scrapy.Item):
+    """豆瓣数据传输Item
+    """
+    doubanEntity = scrapy.Field()
+    
+class doubanFilmItemLs(object):
+    """豆瓣Item封装中间件
+    """
+    def __init__(self):
+        self.doubanEntityLs = []
+
 class doubanRelationItem(scrapy.Item):
-    """豆瓣好友关系
+    """豆瓣好友关系Item
     """
     #用户id
     uid = scrapy.Field()
     #用户关注者id
     fid = scrapy.Field()
+
+class doubanUserGroupRelationItem(scrapy.Item):
+    """豆瓣用户群组加入关系Item
+    2017.2.16
+    """
+    #用户id
+    uid = scrapy.Field()
+    #群组id
+    gid = scrapy.Field()
+    #群组名称
+    gname = scrapy.Field()
+    
+class doubanGroupItem(scrapy.Item):
+    """豆瓣小组
+    """
+    #豆瓣小组ID
+    gid = scrapy.Field()
+    #豆瓣小组名字
+    name = scrapy.Field()
+    #豆瓣小组的创建事件
+    create_time = scrapy.Field()
+    #豆瓣小组的成员数量
+    member_count = scrapy.Field()
+    #豆瓣小组的描述
+    desc = scrapy.Field()
+    #豆瓣小组拥有者
+    ownerId = scrapy.Field()
+    #豆瓣小组管理者名称
+    manager_name = scrapy.Field()
+    #豆瓣小组成员名称
+    member_name = scrapy.Field()
+    #avatar = scrapy.Field()
+
+class doubanUserLifeStreamItem(scrapy.Item):
+    """豆瓣用户事件流Item
+    """
+    #
+    pass
 
 class doubanShortCommentItem(scrapy.Item):
     """短评Item
@@ -166,7 +216,29 @@ class doubanReviewCommentItem(scrapy.Item):
     #回应时间
     create_time = scrapy.Field()
     
-#----- Ls封装 传递给pipeline----------
+class doubanFilmInfo(scrapy.Item):
+    """豆瓣电影信息（按年度）
+    """
+    #电影ID
+    id = scrapy.Field()
+    #电影的名称
+    title = scrapy.Field()
+    #电影评分
+    score = scrapy.Field()
+    #电影星级
+    stars = scrapy.Field()
+    #电影导演
+    director = scrapy.Field()
+    #电影主演
+    starring = scrapy.Field()
+    #电影类型
+    type = scrapy.Field()
+    #电影发行国家
+    country = scrapy.Field()
+    #电影年代
+    year = scrapy.Field()
+        
+#----- Ls封装赋值给Item后 传递给pipeline----------
 class relationItemLs(object):
     """豆瓣好友关系
     """
@@ -175,7 +247,17 @@ class relationItemLs(object):
         self.uidLs = []
         #用户关注者id
         self.fidLs = []
-    
+class doubanUserGroupRelationItemLs(object):
+    """豆瓣用户群组关系列表
+    """
+    def __init__(self):
+        #用户id
+        self.uidLs = []
+        #群组id
+        self.gidLs = []
+        #群组名称
+        self.gnameLs = []
+   
 class shortCommentItemLs(object):
     """短评Item 列表
     """
@@ -327,3 +409,26 @@ class doubanReviewCommentItemLs(object):
         #回应时间
         self.create_timeLs = []
         
+        
+class doubanFilmInfoLs(object):
+    """豆瓣电影信息（按年度）
+    """
+    def __init__(self):
+        #电影ID
+        self.idLs = []
+        #电影的名称
+        self.titleLs = []
+        #电影评分
+        self.scoreLs = []
+        #电影星级
+        self.starsLs = []
+        #电影导演
+        self.directorLs = []
+        #电影主演
+        self.starringLs = []
+        #电影类型
+        self.typeLs = []
+        #电影发行国家
+        self.countryLs = []
+        #电影年代
+        self.yearLs = []

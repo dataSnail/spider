@@ -7,7 +7,7 @@ Created on 2016年10月3日
 import MySQLdb
 
 class dbManager2():
-    def __init__(self,dbname,host='223.3.75.180',user='root',passwd='root@123',port=3306,charset='utf8'):
+    def __init__(self,dbname,host='223.3.75.216',user='root',passwd='root@123',port=3306,charset='utf8'):
         self.__host = host
         self.__user = user
         self.__passwd = passwd

@@ -7,7 +7,9 @@ Created on 2016年12月30日
 import re
 from seuSpider.items.doubanItems import doubanShortCommentItem,shortCommentItemLs,\
     doubanRelationItem, relationItemLs,doubanReviewItem,reviewItemLs,\
-    doubanReviewCommentItem, doubanReviewCommentItemLs,doubanUserInfoItem
+    doubanReviewCommentItem, doubanReviewCommentItemLs,doubanUserInfoItem,\
+    doubanUserGroupRelationItem, doubanUserGroupRelationItemLs,\
+    doubanFilmItem, doubanFilmItemLs
     
 # from seuSpider.items.doubanItems import userItem,userItemLs
 import logging
@@ -81,6 +83,7 @@ class doubanHandler(object):
     
     def relationHandler(self,json_data,url):
         """豆瓣用户关注关系 夹带 用户信息
+        2017.1.20去掉电影长评所带用户信息
         """
         logging.info(url)
         item = doubanRelationItem()
@@ -124,6 +127,7 @@ class doubanHandler(object):
     
     def reviewCommentHandler(self,json_data,url):
         """豆瓣影评的评论（回应）夹带 相关用户
+        2017.1.20去掉电影长评所带用户信息
         """
         logging.info(url)
         item = doubanReviewCommentItem()
@@ -214,6 +218,102 @@ class doubanHandler(object):
         
         return item
     
+    def userGroupRelationHandler(self,json_data,url):
+        """用户群组加入关系
+        """
+        extract_uid = re.findall("user/(.+)/joined_groups",url)#url相关
+        
+        item = doubanUserGroupRelationItem()
+        itemLs = doubanUserGroupRelationItemLs()
+        itemLs.uidLs.append(int(extract_uid[0]))
+        for ugrelation in json_data['groups']:
+            itemLs.gidLs.append(ugrelation['id'])
+            itemLs.gnameLs.append(ugrelation['name'])
+            
+        item['uid'] = itemLs.uidLs
+        item['gid'] = itemLs.gidLs
+        item['gname'] = itemLs.gnameLs
+        
+        return item
+    
+    def filmInfoHandler(self,json_data):
+        """豆瓣电影信息
+        """
+#         item = doubanFilmInfo()
+#         itemLs = doubanFilmInfoLs()
+#         
+#         for filmInfo in json_data:
+#             itemLs.idLs.append(re.findall("subject/(.+)",filmInfo['url'])[0])
+#             itemLs.scoreLs.append(filmInfo['score'])
+#             itemLs.starsLs.append(filmInfo['stars'])
+#             itemLs.directorLs.append(filmInfo['desc'][0])
+#             itemLs.starringLs.append(filmInfo['desc'][1])
+#             itemLs.typeLs.append(filmInfo['desc'][2])
+#             itemLs.countryLs.append(filmInfo['desc'][3])
+#             itemLs.yearLs.append(filmInfo['desc'][4])
+#             
+#         item['id']       = itemLs.idLs
+#         item['score']    = itemLs.scoreLs
+#         item['stars']    = itemLs.starsLs
+#         item['director'] = itemLs.directorLs
+#         item['starring'] = itemLs.starringLs
+#         item['type']     = itemLs.typeLs
+#         item['country']  = itemLs.countryLs
+#         item['year']     = itemLs.yearLs
+        
+        item = doubanFilmItem()
+        itemLs = doubanFilmItemLs()
+        
+        for filmInfo in json_data:
+            item_list = []
+            if filmInfo.has_key('url'):
+                item_list.append(int(re.findall("subject/(.+)",filmInfo['url'])[0]))
+            else:
+                continue
+            if filmInfo.has_key('title'):
+                item_list.append(filmInfo['title'])
+            else:
+                item_list.append('')
+            if filmInfo.has_key('score'):
+                item_list.append(filmInfo['score'])
+            else:
+                item_list.append('')
+            if filmInfo.has_key('stars'):   
+                item_list.append(int(filmInfo['stars']))
+            else:
+                item_list.append(-1)
+            
+            director = ''
+            starring = ''
+            type_film = ''
+            country = ''
+            year = ''
+            for desc in filmInfo['desc']:
+                if u'导演' in desc:
+                    director = desc
+                elif u'主演' in desc:
+                    starring = desc
+                elif u'类型' in desc:
+                    type_film = desc
+                elif u'制片国家' in desc:
+                    country = desc
+                elif u'年份' in desc:
+                    year = desc
+                else:
+                    director = u'描述错误'
+                    
+                    
+            item_list.append(director)
+            item_list.append(starring)
+            item_list.append(type_film)
+            item_list.append(country)
+            item_list.append(year)
+            
+            itemLs.doubanEntityLs.append(tuple(item_list))
+            
+        item['doubanEntity'] = itemLs.doubanEntityLs
+        return item
+    
 #---------- ------------
     def commentDBHandler(self,cur,item):
         """豆瓣短评数据库处理函数
@@ -249,15 +349,15 @@ class doubanHandler(object):
         except Exception as e:
             logging.error("relationDBHandler: "+str(e))
     
-    def userDBHandler(self,cur,item):
-        """豆瓣用户信息数据库处理函数
-        """
-        userSql = "insert ignore into users (uid,unid,intro,loc,followers_count,name,gender) values (%s,%s,%s,%s,%s,%s,%s)"
-        try:
-            for i in range(len(item['uid'])):
-                cur.execute(userSql,(item['uid'][i],item['unid'][i],item['intro'][i],item['loc'][i],item['followers_count'][i],item['name'][i],item['gender'][i]))
-        except Exception as e:
-            logging.error("userDBHandler: "+str(e))
+#     def userDBHandler(self,cur,item):
+#         """豆瓣用户信息数据库处理函数
+#         """
+#         userSql = "insert ignore into users (uid,unid,intro,loc,followers_count,name,gender) values (%s,%s,%s,%s,%s,%s,%s)"
+#         try:
+#             for i in range(len(item['uid'])):
+#                 cur.execute(userSql,(item['uid'][i],item['unid'][i],item['intro'][i],item['loc'][i],item['followers_count'][i],item['name'][i],item['gender'][i]))
+#         except Exception as e:
+#             logging.error("userDBHandler: "+str(e))
             
     def userInfoDBHandler(self,cur,item):
         """豆瓣用户详细信息页面用户信息
@@ -279,3 +379,33 @@ class doubanHandler(object):
                 cur.execute(reviewCommentSql,(item['rcid'][i],item['rid'][0],item['uid'][i],item['rrcid'][i],item['text'][i],item['create_time'][i]))
         except Exception as e:
             logging.error("reviewCommentDBHandler: "+str(e))
+            
+    def groupInformationDBHandler(self,cur,item):
+        """豆瓣小组信息数据库处理函数
+        """
+        try:
+            for i in range(len(item['xx'])):
+                cur.execute()
+        except Exception as e:
+            logging.error("groupInformationDBHandler: "+str(e))
+    
+    def userGroupRelationDBHandler(self,cur,item):
+        """用户加入小组关系数据库处理函数
+        """
+        userGroupSql = "insert ignore into userGroupRelation(uid,groupid,group_name,insert_time) values(%s,%s,%s,now())"
+        try:
+            for i in range(len(item['gid'])):
+                cur.execute(userGroupSql,(item['uid'][0],item['gid'][i],item['gname'][i]))
+        except Exception as e:
+            logging.error("userGroupRelationDBHandler "+str(e))
+
+    def filmInfoDBHandler(self,cur,item):
+        """豆瓣电影信息
+        """
+        filmInfoSql = "insert ignore into movies2016 (id,title,score,stars,director,starring,type,country,year) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        try:
+            for i in range(len(item['doubanEntity'])):
+                cur.execute(filmInfoSql,item['doubanEntity'][i])
+        except Exception as e:
+            logging.error("filmInfoDBHandler "+str(e))
+        
