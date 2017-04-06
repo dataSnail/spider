@@ -20,6 +20,17 @@ class doubanFilmItemLs(object):
     """
     def __init__(self):
         self.doubanEntityLs = []
+        
+class doubanGroupInfoItem(scrapy.Item):
+    """豆瓣小组信息Item
+    """
+    groupInfo = scrapy.Field()
+
+class doubanGroupInfoItemLs(object):
+    """豆瓣小组信息Item 中间封装
+    """
+    def __init__(self):
+        self.groupInfoLs = []
 
 class doubanRelationItem(scrapy.Item):
     """豆瓣好友关系Item
@@ -70,6 +81,7 @@ class doubanUserLifeStreamItem(scrapy.Item):
 class doubanShortCommentItem(scrapy.Item):
     """短评Item
     """
+    movie_id = scrapy.Field()
     #短评人ID
     cuid = scrapy.Field()
     #短评ID
@@ -130,7 +142,7 @@ class doubanUserInfoItem(scrapy.Item):
     #用户照片专辑数量
     photo_albums_count = scrapy.Field()
     #用户简介
-    abstract = scrapy.Field()
+#     abstract = scrapy.Field()
     #用户信息
     intro = scrapy.Field()
     #用户notes（日记?)数量
@@ -178,6 +190,8 @@ class doubanUserInfoItem(scrapy.Item):
 class doubanReviewItem(scrapy.Item):
     """影评Item
     """
+    #电影id
+    movie_id = scrapy.Field()
     #影评人ID
     cuid = scrapy.Field()
     #影评ID
@@ -262,6 +276,7 @@ class shortCommentItemLs(object):
     """短评Item 列表
     """
     def __init__(self):
+        self.movie_idLs = []
         #短评人ID
         self.cuidLs = []
         #短评ID
@@ -279,6 +294,7 @@ class reviewItemLs(object):
     """影评Item 列表
     """
     def __init__(self):
+        self.movie_idLs = []
         #影评人ID
         self.cuidLs = []
         #影评ID
@@ -348,7 +364,7 @@ class userInfoItemLs(object):
         #用户照片专辑数量
         self.photo_albums_countLs = []
         #用户简介
-        self.abstractLs = []
+#         self.abstractLs = []
         #用户信息
         self.introLs = []
         #用户notes（日记?)数量

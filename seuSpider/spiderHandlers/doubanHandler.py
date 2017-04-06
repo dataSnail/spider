@@ -9,7 +9,7 @@ from seuSpider.items.doubanItems import doubanShortCommentItem,shortCommentItemL
     doubanRelationItem, relationItemLs,doubanReviewItem,reviewItemLs,\
     doubanReviewCommentItem, doubanReviewCommentItemLs,doubanUserInfoItem,\
     doubanUserGroupRelationItem, doubanUserGroupRelationItemLs,\
-    doubanFilmItem, doubanFilmItemLs
+    doubanFilmItem, doubanFilmItemLs, doubanGroupInfoItem, doubanGroupInfoItemLs
     
 # from seuSpider.items.doubanItems import userItem,userItemLs
 import logging
@@ -21,23 +21,26 @@ class doubanHandler(object):
         pass
     
     
-    def commentHandler(self,json_data):
+    def commentHandler(self,json_data,movie_id):
         """豆瓣短评处理
         """
         print '-----commentHandler--------'
         item = doubanShortCommentItem()
         itemLs = shortCommentItemLs()
-        
+        itemLs.movie_idLs.append(movie_id)
         for interest in json_data["interests"]:
             itemLs.cuidLs.append(interest["user"]["id"])
             itemLs.commentIdLs.append(interest["id"])
-            itemLs.commentLs.append(interest["comment"])
+            #替换短评内容中的emoji
+            comment_tem = self.filter_emoji('(emoji)',interest["comment"])
+            itemLs.commentLs.append(comment_tem)
             if type(interest["rating"])== type(None):
                 itemLs.ratingLs.append("null")
             else:
                 itemLs.ratingLs.append(str(interest["rating"]["count"])+","+str(interest["rating"]["max"])+","+str(interest["rating"]["value"]))
             itemLs.vote_countLs.append(interest["vote_count"])
             itemLs.create_timeLs.append(interest["create_time"])
+        item["movie_id"] = itemLs.movie_idLs
         item["cuid"] = itemLs.cuidLs
         item["commentId"] = itemLs.commentIdLs
         item["comment"]= itemLs.commentLs
@@ -47,17 +50,20 @@ class doubanHandler(object):
         return item
     
     
-    def reviewHandler(self,json_data):
-        """豆瓣影评处理
+    def reviewHandler(self,json_data,movie_id):
+        """豆瓣影评处理（长评）
         """
         print '-----reviewHandler--------'
         item = doubanReviewItem()
         itemLs = reviewItemLs()
-        
+        #电影id增加，爬取多个电影的长评
+        itemLs.movie_idLs.append(movie_id)
         for reviews in json_data["reviews"]:
             itemLs.cuidLs.append(reviews["user"]["id"])
             itemLs.reviewIdLs.append(reviews["id"])
-            itemLs.titleLs.append(reviews["title"])
+            #替换emoji表情
+            title_tem = self.filter_emoji('(emoji)', reviews["title"])
+            itemLs.titleLs.append(title_tem)
             if type(reviews["rating"])== type(None):
                 itemLs.ratingLs.append("null")
             else:
@@ -68,7 +74,8 @@ class doubanHandler(object):
             itemLs.useless_countLs.append(reviews["useless_count"])
             itemLs.create_timeLs.append(reviews["create_time"])
             itemLs.comments_countLs.append(reviews["comments_count"])
-            
+        
+        item["movie_id"] = itemLs.movie_idLs    
         item["cuid"] = itemLs.cuidLs
         item["reviewId"] = itemLs.reviewIdLs
         item["title"]= itemLs.titleLs
@@ -187,7 +194,7 @@ class doubanHandler(object):
         item['following_count'] = json_data['following_count']
         item['seti_channel_count'] = json_data['seti_channel_count']
         item['photo_albums_count'] = json_data['photo_albums_count']
-        item['abstract'] = json_data['abstract'].strip()
+#         item['abstract'] = json_data['abstract'].strip()
         item['intro'] = json_data['intro'].strip()
         item['notes_count'] = json_data['notes_count']
         if json_data['loc'] == None:
@@ -228,7 +235,7 @@ class doubanHandler(object):
         itemLs.uidLs.append(int(extract_uid[0]))
         for ugrelation in json_data['groups']:
             itemLs.gidLs.append(ugrelation['id'])
-            itemLs.gnameLs.append(ugrelation['name'])
+            itemLs.gnameLs.append(self.filter_emoji("emoji", ugrelation['name']))
             
         item['uid'] = itemLs.uidLs
         item['gid'] = itemLs.gidLs
@@ -314,14 +321,41 @@ class doubanHandler(object):
         item['doubanEntity'] = itemLs.doubanEntityLs
         return item
     
+    def groupInfoHandler(self,json_data):
+        """豆瓣小组信息处理函数
+        """
+        
+        item = doubanGroupInfoItem()
+        itemLs = doubanGroupInfoItemLs()
+        
+        item_tmp = []
+        item_tmp.append(int(json_data['id']))
+        item_tmp.append(json_data['name'])
+        item_tmp.append(int(json_data['member_count']))
+        item_tmp.append(json_data['manager_name']+"|"+json_data['member_name'])
+        item_tmp.append(json_data['create_time'])
+        item_tmp.append(int(json_data['owner']['id']))
+        item_tmp.append(self.filter_emoji('(emoji)',json_data['desc']))
+        
+        itemLs.groupInfoLs.append(tuple(item_tmp))
+        
+        item['groupInfo'] = itemLs.groupInfoLs
+        
+        return item
+        
+        
+        
+        
+    
+    
 #---------- ------------
     def commentDBHandler(self,cur,item):
         """豆瓣短评数据库处理函数
         """
-        commentSql = 'insert ignore into comments (cuid,commentId,comment,rating,vote_count,create_time,insert_time) values(%s,%s,%s,%s,%s,%s,now())'
+        commentSql = 'insert ignore into comments (movie_id,cuid,commentId,comment,rating,vote_count,create_time,insert_time) values(%s,%s,%s,%s,%s,%s,%s,now())'
         try:
             for i in range(len(item["cuid"])):
-                cur.execute(commentSql,(int(item['cuid'][i]),int(item['commentId'][i]),item['comment'][i],item['rating'][i],int(item['vote_count'][i]),item['create_time'][i]))
+                cur.execute(commentSql,(int(item['movie_id'][0]),int(item['cuid'][i]),int(item['commentId'][i]),item['comment'][i],item['rating'][i],int(item['vote_count'][i]),item['create_time'][i]))
         except Exception as e:
             logging.error('DBError---->uidList::'+str(item['cuid'][0])+' did not insert into table')
             logging.error(e)
@@ -329,10 +363,10 @@ class doubanHandler(object):
     def reviewDBHandler(self,cur,item):
         """豆瓣长评数据库处理函数
         """
-        reviewSql = 'insert ignore into reviews (cuid,rid,title,rating,useful_count,likers_count,vote_status,useless_count,comments_count,create_time,insert_time) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())'
+        reviewSql = 'insert ignore into reviews (movie_id,cuid,rid,title,rating,useful_count,likers_count,vote_status,useless_count,comments_count,create_time,insert_time) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())'
         try:
             for i in range(len(item['cuid'])):
-                cur.execute(reviewSql,(int(item['cuid'][i]),int(item['reviewId'][i]),item['title'][i],item['rating'][i],int(item['useful_count'][i]),int(item['likers_count'][i]),int(item['vote_status'][i]),int(item['useless_count'][i]),int(item['comments_count'][i]),item['create_time'][i]))
+                cur.execute(reviewSql,(int(item['movie_id'][0]),int(item['cuid'][i]),int(item['reviewId'][i]),item['title'][i],item['rating'][i],int(item['useful_count'][i]),int(item['likers_count'][i]),int(item['vote_status'][i]),int(item['useless_count'][i]),int(item['comments_count'][i]),item['create_time'][i]))
                 
         except Exception as e:
             logging.error('DBError---->uidList::'+str(item['cuid'][0])+' did not insert into table')
@@ -362,10 +396,10 @@ class doubanHandler(object):
     def userInfoDBHandler(self,cur,item):
         """豆瓣用户详细信息页面用户信息
         """
-        userInfoSql = "insert ignore into userInfo (id,uid,following_count,seti_channel_count,photo_albums_count,abstract,intro,notes_count,loc,reg_time,joined_group_count,followers_count,is_phone_bound,verify_type,updated_profile,type,statuses_count,group_chat_count,owned_doulist_count,birthday,collected_subjects_count,name,gender,verify_reason,ark_published_count,following_doulist_count,is_normal) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        userInfoSql = "insert ignore into userInfo (id,uid,following_count,seti_channel_count,photo_albums_count,intro,notes_count,loc,reg_time,joined_group_count,followers_count,is_phone_bound,verify_type,updated_profile,type,statuses_count,group_chat_count,owned_doulist_count,birthday,collected_subjects_count,name,gender,verify_reason,ark_published_count,following_doulist_count,is_normal) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
         try:
             cur.execute('SET CHARSET utf8mb4')
-            cur.execute(userInfoSql,(item['id'],item['uid'],item['following_count'],item['seti_channel_count'],item['photo_albums_count'],item['abstract'],item['intro'],item['notes_count'],item['loc'],item['reg_time'],item['joined_group_count'],item['followers_count'],item['is_phone_bound'],item['verify_type'],item['updated_profile'],item['type'],item['statuses_count'],item['group_chat_count'],item['owned_doulist_count'],item['birthday'],item['collected_subjects_count'],item['name'],item['gender'],item['verify_reason'],item['ark_published_count'],item['following_doulist_count'],item['is_normal']))
+            cur.execute(userInfoSql,(item['id'],item['uid'],item['following_count'],item['seti_channel_count'],item['photo_albums_count'],item['intro'],item['notes_count'],item['loc'],item['reg_time'],item['joined_group_count'],item['followers_count'],item['is_phone_bound'],item['verify_type'],item['updated_profile'],item['type'],item['statuses_count'],item['group_chat_count'],item['owned_doulist_count'],item['birthday'],item['collected_subjects_count'],item['name'],item['gender'],item['verify_reason'],item['ark_published_count'],item['following_doulist_count'],item['is_normal']))
         except Exception as e:
             logging.error("userInfoDBHandler: "+str(e))
 
@@ -408,4 +442,24 @@ class doubanHandler(object):
                 cur.execute(filmInfoSql,item['doubanEntity'][i])
         except Exception as e:
             logging.error("filmInfoDBHandler "+str(e))
+            
+    def groupInfoDBHandler(self,cur,item):
+        """豆瓣小组信息处理函数
+        """
+        groupInfoSql = "insert ignore into groupInfo(id,name,member_count,manager_member,create_time,owner_id,description,insert_time) values (%s,%s,%s,%s,%s,%s,%s,now())"
+#         print groupInfoSql%item['groupInfo'][0]
+        try:
+            cur.execute(groupInfoSql,item['groupInfo'][0])
+        except Exception as e:
+            logging.error('doubanGroupInfoDBHandler'+str(e))
+            
         
+    def filter_emoji(self,restr,desstr):
+        """去除emoji表情
+                                由于数据库中频频出现表情插入不合法，直接把文字中表情符号去除
+        """
+        try:
+            co = re.compile(u'[\U00010000-\U0010ffff]')
+        except re.error:
+            co = re.compile(u'[\uD800-\uDBFF][\uDC00-\uDFFF]')
+        return co.sub(restr, desstr)

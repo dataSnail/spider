@@ -93,6 +93,7 @@ class CookiesMiddleware(RetryMiddleware):
 
     def __init__(self, settings, crawler):
         RetryMiddleware.__init__(self, settings)
+#         self.rconn = settings.get("RCONN", redis.Redis(crawler.settings.get('REDIS_HOST', 'localhsot'), crawler.settings.get('REDIS_PORT', 6379)))
         self.rconn = settings.get("RCONN", redis.Redis(password = "redis123",host = "223.3.94.145", port = 6379))
         initCookie(self.rconn, crawler.spider.name)
 
@@ -104,7 +105,7 @@ class CookiesMiddleware(RetryMiddleware):
         redisKeys = self.rconn.keys()
         while len(redisKeys) > 0:
             elem = random.choice(redisKeys)
-            if "douban:Cookies" in elem:
+            if "SinaSpider:Cookies" in elem:
                 cookie = json.loads(self.rconn.get(elem))
                 request.cookies = cookie
                 request.meta["accountText"] = elem.split("Cookies:")[-1]

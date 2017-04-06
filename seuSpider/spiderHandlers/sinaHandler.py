@@ -6,8 +6,10 @@ Created on 2016年12月30日
 '''
 import re
 import logging
-from seuSpider.items.sinaItems import userRelationItem,userRelationitemLs
-from seuSpider.items.sinaItems import userInfoItem,userInfoItemLs
+import time
+from seuSpider.items.sinaItems import sinaRelationItem,sinaRelationItemLs,\
+    sinaBlogItem, sinaBlogItemLs, sinaCommentItem, sinaCommentItemLs,\
+    sinaUserItem, sinaUserItemLs
 import MySQLdb
 
 class sinaHandler(object):
@@ -16,131 +18,208 @@ class sinaHandler(object):
     def __init__(self):
         print "---sinaHandler starting---"
     
-    def userRelationHandler(self,json_data,url):
+    def relationHandler(self,json_data,url):
         """用户关系处理函数
         @json_data 获得的json数据
         @url 爬取的url地址
         """
-        uiItem = userInfoItem()
-        uiItemLs = userInfoItemLs()
-        
-        urItem = userRelationItem()
-        urItemLs = userRelationitemLs()
-        
+        relationItem = sinaRelationItem()
+        relationItemLs = sinaRelationItemLs()
+        current_total = {'current':-2,'total':-2}
         extract_uid = re.findall("100505(.+)_-_FOLLOWERS",url)
-        extract_page = re.findall("page=(.+)",url)
+        extract_page = int(re.findall("FOLLOWERS&page=(.+)",url)[0])
         if len(extract_uid)!=1:
-            logging.error('\n----------extract_uid %s error----------%s----------'%(extract_uid,url))
+            logging.error('\nextract_uid %s ur::%s::'%(extract_uid,url))
         else:
-            logging.info('----------------------------------------uid,page=%s,%s'%(extract_uid[0],extract_page[0]))
-            urItem['uid'] = extract_uid
-
-            if json_data['count'] == None or json_data['count'] == 0 or str(json_data['count'])=='':
-                logging.info('uid::::::'+str(urItem['uid'])+'at page :::'+str(url)+'have no information---------------------------!!!!!write file...')
-                #方案1：单独写一个文件之后处理；方案2：push到redis里面，重新做此url；方案3：循环请求，yield request；
-                with open('noInfomationUrls.txt','a') as filee:
-                    filee.write("rpush frelation:start_urls "+str(url)+'\n')
+            if (not json_data.has_key('count')) or json_data['count'] == None or json_data['count'] == 0 or str(json_data['count'])=='':
+                logging.info(str(url)+'have no information !!!!! write file...')
+#                 #方案1：单独写一个文件之后处理；方案2：push到redis里面，重新做此url；方案3：循环请求，yield request；
+#                 with open('noInfomationUrls.txt','a') as filee:
+#                     filee.write("rpush frelation:start_urls "+str(url)+'\n')
+                itemList = []
+                itemList.append(int(extract_uid[0]))
+                itemList.append(-1)
+                itemList.append(current_total)
+                relationItemLs.sinaRelationLs.append(itemList)
             else:
+                if json_data.has_key('maxPage'):
+                    current_total['total'] = json_data['maxPage']
+                else:
+                    current_total['total'] = -1
                 for card in json_data['cards']:
-        #             userLs.append(str(self.user_list[self.user_current_index]))
-                    urItemLs.fidLs.append(card['user']['id'])
-
-                    uiItemLs.uidLs.append(str(card['user']['id']))
-                    uiItemLs.scree_nameLs.append(card['user']['screen_name'])
-                    uiItemLs.profile_img_urlLs.append(card['user']['profile_image_url'])
-                    uiItemLs.status_countLs.append(card['user']['statuses_count'])
-                    uiItemLs.verifiedLs.append(card['user']['verified'])
-                    if card['user']['verified']:
-                        uiItemLs.verified_reasonLs.append(card['user']['verified_reason'])
-                    else:
-                        uiItemLs.verified_reasonLs.append("None")
-                    uiItemLs.descriptionLs.append("".join(re.findall(ur"[\u4e00-\u9fa5a-z0-9\w\-\.,@?^=%&amp;:/~\+#<>\s]+", card['user']['description'])))
-                    uiItemLs.verified_typeLs.append(card['user']['verified_type'])
-                    uiItemLs.genderLs.append(card['user']['gender'])
-                    uiItemLs.mbtypeLs.append(card['user']['mbtype'])
-                    uiItemLs.mbrankLs.append(card['user']['mbrank'])
-                    uiItemLs.followers_countLs.append(card['user']['followers_count'])
-
-                urItem['fid'] = urItemLs.fidLs
-                
-                uiItem['uid'] = uiItemLs.uidLs
-                uiItem['scree_name'] = uiItemLs.scree_nameLs
-                uiItem['profile_img_url'] = uiItemLs.profile_img_urlLs
-                uiItem['status_count'] = uiItemLs.status_countLs
-                uiItem['verified'] = uiItemLs.verifiedLs
-                uiItem['verified_reason'] = uiItemLs.verified_reasonLs
-                uiItem['gender'] = uiItemLs.genderLs
-                uiItem['mbtype'] = uiItemLs.mbtypeLs
-                uiItem['mbrank'] = uiItemLs.mbrankLs
-                uiItem['followers_count'] = uiItemLs.followers_countLs
-                uiItem['description'] = uiItemLs.descriptionLs
-                uiItem['verified_type'] = uiItemLs.verified_typeLs
-
-                return uiItem,urItem
+                    itemList = []
+                    itemList.append(int(extract_uid[0]))
+                    itemList.append(int(card['user']['id']))
+                    current_total['current'] = extract_page
+                    itemList.append(current_total)
+                    relationItemLs.sinaRelationLs.append(itemList)
+                    
+            relationItem['sinaRelation'] = relationItemLs.sinaRelationLs
+            return relationItem
             
+    def blogHander(self,json_data):
+        """用户微博处理函数
+        @json_data 获得的json数据
+        """
+        item = sinaBlogItem()
+        itemLs = sinaBlogItemLs()
+        
+        for mblog in json_data['cards']:
+            item_list = self.fillBlog(mblog['mblog'])
+            itemLs.sinaBlogEntityLs.append(item_list)
+            #处理转发微博
+            if mblog.has_key('retweeted_status'):
+                item_list = self.fillBlog(mblog['retweeted_status'])
+                itemLs.sinaBlogEntityLs.append(item_list)
+        item['sinaBlogEntity'] = itemLs.sinaBlogEntityLs
+        return item
+    
+    def fillBlog(self,mblog):
+        item_list = []
+        item_list.append(mblog['user']['id'])
+        item_list.append(mblog['id'])
+        #获得转发微博id和用户id
+        if mblog.has_key('retweeted_status'):
+            item_list.append(mblog['retweeted_status']['id'])
+            if mblog['retweeted_status'].has_key('user'):
+                item_list.append(mblog['retweeted_status']['user']['id'])
+            else:
+                item_list.append(0)     
+        else:
+            item_list.append(0)
+            item_list.append(0)
             
-            
+        item_list.append(self.filter_emoji('emoji', mblog['text']))
+        item_list.append(mblog['source'])
+        item_list.append(mblog['reposts_count'])
+        item_list.append(mblog['comments_count'])
+        item_list.append(mblog['attitudes_count'])
+        item_list.append(mblog['bid'])
+        item_list.append(self.timeFormat(mblog['created_at']))
+#             item_list.append(1)
+        return tuple(item_list)
+        
+    def commentHandler(self,json_data,url):
+        """用户微博处理函数
+        @json_data 获得的json数据
+        """
+        item = sinaCommentItem()
+        itemLs = sinaCommentItemLs()
+        blogId = int(re.findall("&id=(.+)&type=",url)[0])
+        for comment in json_data[1]['card_group']:
+            item_list = []
+            item_list.append(comment['id'])
+            item_list.append(comment['user']['id'])
+            item_list.append(blogId)
+            if comment.has_key('reply_id'):
+                item_list.append(comment['reply_id'])
+            else:
+                item_list.append(0)
+            item_list.append(self.filter_emoji('emoji',comment['text']))
+            item_list.append(comment['source'])
+            item_list.append(comment['like_counts'])
+            item_list.append(self.timeFormat(comment['created_at']))
+            itemLs.sinaCommentEntityLs.append(tuple(item_list))
+        
+        item['sinaCommentEntity'] = itemLs.sinaCommentEntityLs
+        return item
+        
+    def userHandler(self,json_data,url):
+        
+        item = sinaUserItem()
+        itemLs = sinaUserItemLs()
+        uid = int(re.findall("containerid=230283(.+)_-_INFO",url)[0])
+        item_dic = {}
+        for info_0 in json_data['cards']:
+            for info_1 in info_0['card_group']:
+                #昵称
+                if info_1['item_name'] == u"昵称":
+                    item_dic['nickName'] = info_1['item_content']
+                #认证
+                if info_1['item_type'] == 'verify_yellow':
+                    item_dic['verify'] = info_1['item_content']
+                #标签
+                if info_1['item_name'] == u"标签":
+                    item_dic['tag'] = info_1['item_content']
+                #性别
+                if info_1['item_name'] == u"性别":
+                    item_dic['gender'] = info_1['item_content']
+                #所在地
+                if info_1['item_name'] == u"所在地":
+                    item_dic['location'] = info_1['item_content']
+                #简介
+                if info_1['item_name'] == u"简介":
+                    item_dic['intro'] = info_1['item_content']
+                #博客
+                if info_1['item_name'] == u"博客":
+                    item_dic['blog'] = info_1['item_content']
+                #等级
+                if info_1['item_name'] == u"等级":
+                    item_dic['degree'] = info_1['item_content']
+                #信用
+                if info_1['item_name'] == u"阳光信用":
+                    item_dic['confidence'] = info_1['item_content']
+                #注册时间
+                if info_1['item_name'] == u"注册时间":
+                    item_dic['regtime'] = info_1['item_content']
+            if len(item_dic) == 10:
+                break
+        item_list = []
+        item_list.append(uid)
+        item_list.append(item_dic['nickName'])
+        item_list.append(item_dic['verify'])
+        item_list.append(item_dic['tag'])
+        item_list.append(item_dic['gender'])
+        item_list.append(item_dic['location'])
+        item_list.append(item_dic['intro'])
+        item_list.append(item_dic['blog'])
+        item_list.append(item_dic['degree'])
+        item_list.append(item_dic['confidence'])
+        item_list.append(item_dic['regtime'])
+        itemLs.sinaUserEntityLs.append(tuple(item_list))
+        item['sinaUserEntity'] = itemLs.sinaUserEntityLs
+        item_list = []
+        item_dic = {}
+        return item    
+        
 #---------pipeline DBHandler---------
-    def sinaRelationDBHandler(self,cur,item):
+    def relationDBHandler(self,cur,item):
         """处理新浪关系的数据库操作
         """
-        try:
-            for i in range(len(item['fid'])):
-                f_sql = 'insert ignore into frelation_'+str(long(item['uid'][0])%1000)+' (uid,fid,insert_time) values(%s,%s,now())'
-                s_sql = 'insert ignore into scra_flags_4 (uid) values(%s)'
-                cur.execute(f_sql,(item['uid'][0],item['fid'][i]))
-                cur.execute(s_sql,(item['fid'][i],))
-        except Exception as e:
-#             logging.error('DBError---->uidList::'+str(item['uid'][0])+' and fidList::'+str(item['fid'])+'did not insert into table')
-            logging.error(e)
+#         try:
+        if item['sinaRelation'][0][2]['current'] == 1:
+            update_sql1 = 'update flag set total = %s where uid = %s'
+            cur.execute(update_sql1%(item['sinaRelation'][0][2]['total'],item['sinaRelation'][0][0]))
+
+        update_sql = 'update flag set end_page = %s where uid = %s'
+        cur.execute(update_sql%(item['sinaRelation'][0][2]['current'],item['sinaRelation'][0][0]))
+        for i in range(len(item['sinaRelation'])):
+            relationSql = 'insert ignore into sinaFrelation (uid,fid,insert_time) values(%s,%s,now())'
+            cur.execute(relationSql,(item['sinaRelation'][i][0],item['sinaRelation'][i][1]))
+#         except Exception as e:
+#             logging.error(e)
             
     def sinaUserInfoDBHandler(self,cur,item):
         """处理新浪用户信息的数据库操作
         """
         try:
-            for i in range(len(item['uid'])):
-    #                 tableLs.append(str(thash().uhash(uItem['uid'][i],200)))
-                user_info_sql = 'insert ignore into userinfo_'+str(long(item['uid'][i])%200)+' (uid,screen_name,profile_image_url,statuses_count,verified,verified_reason,description,verified_type,gender,mbtype,ismember,fansNum,insert_time) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())'
-                user_info_tuple =(item['uid'][i],item['scree_name'][i],item['profile_img_url'][i],item['status_count'][i],item['verified'][i],item['verified_reason'][i],\
-                item['description'][i],item['verified_type'][i],item['gender'][i],item['mbtype'][i],item['mbrank'][i],item['followers_count'][i])
-                cur.execute(user_info_sql,user_info_tuple)
-    #             logging.info('userinfo_'+','.join(tableLs)+' is inserting.....|||||')
+            user_info_sql = 'insert ignore into userinfo_'+str(0) +\
+            ' (uid,screen_name,statuses_count,verified,verified_reason,description,verified_type,gender,mbtype,ismember,fansNum,insert_time)' \
+            'VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())'
+            cur.execute(user_info_sql,)
         except Exception as e:
 #             logging.error('DBError---->userInfo::'+str(item['uid'])+' did not insert into table'+','.join(tableLs))
             logging.error(e)
             
-    def sinaMblogDBHandler(self, cur, item):
-        which_table = str(long(item['uid'][0]) % 1000)
-        sql = 'INSERT IGNORE INTO wblog_' + which_table + ' (uid, ' \
-                                                  'mid, ' \
-                                                  'bid, ' \
-                                                  'retweeted_mid, ' \
-                                                  'text, ' \
-                                                  'isLongText, ' \
-                                                  'source, ' \
-                                                  'reposts_count, ' \
-                                                  'comments_count, ' \
-                                                  'attitudes_count, ' \
-                                                  'like_count, ' \
-                                                  'hasPic, ' \
-                                                  'hasGif, ' \
-                                                  'hasOutlink, ' \
-                                                  'created_timestamp, ' \
-                                                  'crawl_timestamp, ' \
-                                                  'comment_flag) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+    def sinaBlogDBHandler(self, cur, item):
+        which_table = '0'#str(long(item['uid'][0]) % 1000)
+        sql = 'INSERT IGNORE INTO wblog_' + which_table + ' (uid,' \
+                                                  'mid,retweeted_mid,retweeted_uid,blogtext,source, ' \
+                                                  'reposts_count, comments_count, attitudes_count, bid,created_time, ' \
+                                                  'crawl_time ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())'
         try:
-            for i in range(len(item['uid'])):
-                if item['comments_count'][i] == 0:
-                    comment_flag = '1'
-                else:
-                    comment_flag = '0'
-                cur.execute(sql,
-                            (item['uid'][i], item['mid'][i], item['bid'][i], item['retweeted_mid'][i], item['text'][i],
-                             item['isLongText'][i], item['source'][i],
-                             item['reposts_count'][i], item['comments_count'][i], item['attitudes_count'][i],
-                             item['like_count'][i], item['hasPic'][i],
-                             item['hasGif'][i], item['hasOutlink'][i], item['created_timestamp'][i],
-                             item['crawl_timestamp'], comment_flag))
+            for i in range(len(item['sinaBlogEntity'])):
+                cur.execute(sql,item['sinaBlogEntity'][i])
         except MySQLdb.Error, e:
             logging.info("uf_insert:%s" % str(e))
         except Exception as e:
@@ -149,25 +228,46 @@ class sinaHandler(object):
             
     def sinaCommentDBHandler(self, cur, item):
         which_table = str(0)#str(long(item['mid'][0]) % 1000)
-        sql = 'INSERT IGNORE INTO comment_' + which_table + ' (uid, ' \
-                                                    'cid, ' \
+        sql = 'INSERT IGNORE INTO comment_' + which_table + ' (cid, ' \
+                                                    'uid, ' \
                                                     'mid, ' \
                                                     'reply_id, ' \
                                                     'text, ' \
                                                     'source, ' \
                                                     'like_counts, ' \
                                                     'created_at, ' \
-                                                    'crawl_timestamp) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+                                                    'crawl_time) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,now())'
         try:
 #             cur.execute('SET CHARSET utf8mb4')
-            for i in range(len(item['cid'])):
-                cur.execute(sql,
-                            (item['uid'][i], item['cid'][i], item['mid'][i], item['reply_id'][i], item['text'][i],
-                             item['source'][i],
-                             item['like_counts'][i], item['created_at'][i],
-                             item['crawl_timestamp']))
+            for i in range(len(item['sinaCommentEntity'])):
+                cur.execute(sql,item['sinaCommentEntity'][i])
         except MySQLdb.Error, e:
             logging.info("uf_insert:%s" % str(e))
         except Exception as e:
             logging.error('error in comment_insert, the item is:%s\n'%str(item))
             logging.error(e)
+            
+            
+#-------------------------util-----------------------------
+    def filter_emoji(self,restr,desstr):
+        """去除emoji表情
+                                由于数据库中频频出现表情插入不合法，直接把文字中表情符号去除
+        """
+        try:
+            co = re.compile(u'[\U00010000-\U0010ffff]')
+        except re.error:
+            co = re.compile(u'[\uD800-\uDBFF][\uDC00-\uDFFF]')
+        return co.sub(restr, desstr)
+    
+    def timeFormat(self,t):
+        """time格式
+        """
+        formattedTime = '1970-01-01 10:00'
+        if len(t.split('-'))==2:
+            formattedTime = '2017-'+t
+        elif u'分钟前' in t:
+            formattedTime = time.strftime('%Y-%m-%d %H:%M',time.localtime(time.time()-60*int(t.split(u'分钟前')[0])))
+        elif u'今天' in t:
+            formattedTime = time.strftime('%Y-%m-%d',time.localtime(time.time()))+str(t.split(u'今天')[1])
+        return formattedTime
+        

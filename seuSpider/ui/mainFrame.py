@@ -10,7 +10,7 @@ from seuSpider.utils.dbManager2 import dbManager2
 
 class MainWindow(wx.Frame):
     def __init__(self, parent, myid, title = u"\u722c\u866b\u96c6\u6210\u5e73\u53f0\u0056\u0030\u002e\u0031"):
-        wx.Frame.__init__(self, parent, -1, title, size = (500, 800),
+        wx.Frame.__init__(self, parent, -1, title, size = (1000, 400),
               style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
         self.panel = wx.Panel(self, -1)
 #         self.control = wx.TextCtrl(panel, -1, style=wx.TE_MULTILINE)
@@ -19,6 +19,11 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OndbBtClick, self.dbBt)
         self.dbBt.SetDefault()
         
+        #任务分配按钮
+        self.dbBt = wx.Button(self.panel, -1, u"\u4efb\u52a1\u5206\u914d", pos=(20, 200),size =(150,40),style=0,name='start_button')
+        
+        
+        #豆瓣爬虫 新浪爬虫
         spidersLs = [u'\u8c46\u74e3\u722c\u866b',u'\u65b0\u6d6a\u722c\u866b']
         self.spidersRadio = wx.RadioBox(self.panel,-1,u"\u722c\u866b",(20,10),wx.DefaultSize,spidersLs,2,wx.RA_SPECIFY_COLS)
         self.Bind(wx.EVT_RADIOBOX, self.OnRadioBox, self.spidersRadio)
@@ -85,7 +90,7 @@ class MainWindow(wx.Frame):
         self.reviewBt.Enabled = False
         
     def OnUserBtClick(self,event):
-        self.userBt.SetLabel(u"\u7535\u5f71\u957f\u8bc4\u4fe1\u606f(\u7ed3\u675f)")
+        self.userBt.SetLabel(u"\u7528\u6237\u4fe1\u606f(\u7ed3\u675f)")
         self.userGauge.SetValue(50)
         self.userBt.Enabled = False
         
@@ -103,7 +108,7 @@ class MainWindow(wx.Frame):
             self.reviewGauge= wx.Gauge(self.panel,-1,100,pos=(200,160),size=(250,40),style=wx.GA_PROGRESSBAR)
     
             #用户信息爬虫按钮
-            self.userBt = wx.Button(self.panel, -1, u"\u7535\u5f71\u957f\u8bc4\u4fe1\u606f(\u5f00\u59cb)", pos=(20, 220),size =(150,40),style=0,name='start_button')
+            self.userBt = wx.Button(self.panel, -1, u"\u7528\u6237\u4fe1\u606f(\u5f00\u59cb)", pos=(20, 220),size =(150,40),style=0,name='start_button')
             self.Bind(wx.EVT_BUTTON, self.OnUserBtClick, self.userBt)
             #进度条
             self.userGauge= wx.Gauge(self.panel,-1,100,pos=(200,220),size=(250,40),style=wx.GA_PROGRESSBAR)  

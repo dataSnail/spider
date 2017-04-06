@@ -4,17 +4,20 @@ Created on 2016年10月18日
 
 @author: MQ
 '''
+import redis
 from scrapy import signals
 from scrapy.exceptions import DontCloseSpider
 from scrapy.spiders import Spider, CrawlSpider
 
+from seuSpider.utils import r2mConfig
+from seuSpider.utils.dbManager2 import dbManager2
 from . import connection
+from pydoc import serve
 
 
 # Default batch size matches default concurrent requests setting.
 DEFAULT_START_URLS_BATCH_SIZE = 16
 DEFAULT_START_URLS_KEY = '%(name)s:start_urls'
-
 
 class RedisMixin(object):
     """Mixin class to implement reading urls from a redis queue."""
@@ -24,7 +27,8 @@ class RedisMixin(object):
     redis_batch_size = None
     # Redis client instance.
     server = None
-
+    __db = dbManager2(dbname="newsina")
+    
     def start_requests(self):
         """Returns a batch of start requests from redis."""
         return self.next_requests()
@@ -87,6 +91,7 @@ class RedisMixin(object):
             self.logger.info('reading from redis:::::%s:::::'%data)
             if not data:
                 # Queue empty.
+                self.getUserListFromMysql()
                 break
             req = self.make_request_from_data(data)
             if req:
@@ -115,8 +120,18 @@ class RedisMixin(object):
         # XXX: Handle a sentinel to close the spider.
         self.schedule_next_requests()
         raise DontCloseSpider
-
-
+    ####add at 2017.4.6
+    def getUserListFromMysql(self):
+        try:
+            u_url  = "http://m.weibo.cn/container/getSecond?containerid=100505%s_-_FOLLOWERS&page=1"
+            sql = 'SELECT min(id) as id ,fid from sinaFrelation GROUP BY fid HAVING fid NOT IN (SELECT DISTINCT uid FROM sinaFrelation) ORDER BY id ASC LIMIT 0,1'
+            uidLs = self.__db.executeSelect(sql)
+            insert_sql = "insert ignore flag(uid,end_page,total) values(%s,%s,%s)"%(str(uidLs[0][1]),0,0)
+            self.__db.execute(insert_sql)
+            self.server.rpush('sina_relation',u_url%str(uidLs[0][1]))
+            self.logger.info("++++>"+str(uidLs)+"<+++++++")
+        except Exception as e:
+            self.logger.error('Exception in function::: getUserListFromMysql -------------------->%s'%str(e))
 class RedisSpider(RedisMixin, Spider):
     """Spider that reads urls from redis queue when idle."""
 
@@ -135,3 +150,5 @@ class RedisCrawlSpider(RedisMixin, CrawlSpider):
         obj = super(RedisCrawlSpider, self).from_crawler(crawler, *args, **kwargs)
         obj.setup_redis(crawler)
         return obj
+    
+    

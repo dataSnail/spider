@@ -1,33 +1,38 @@
 # -*- coding: utf-8 -*-
 from seuSpider.utils.dbManager import dbManager
 from seuSpider.spiderHandlers.sinaHandler import sinaHandler
-from seuSpider.items.sinaItems import userInfoItem,userRelationItem,sinaMblogItem,sinaCommentItem
+from seuSpider.items.sinaItems import sinaCommentItem,\
+    sinaRelationItem, sinaBlogItem
 from seuSpider.spiderHandlers.doubanHandler import doubanHandler
 from seuSpider.items.doubanItems import doubanShortCommentItem, doubanReviewItem,\
-    doubanRelationItem, doubanUserItem,doubanReviewCommentItem,\
-    doubanUserGroupRelationItem, doubanFilmItem
+    doubanRelationItem,doubanReviewCommentItem,\
+    doubanUserGroupRelationItem, doubanFilmItem, doubanGroupInfoItem
 from seuSpider.items.doubanItems import doubanUserInfoItem
 
 class sinaPipeline(object):
+    """新浪数据处理
+    """
     __sinaHandlerInstance = sinaHandler()
-    __dbpool = dbManager().get_dbpool()
+    __dbpool = dbManager('newsina').get_dbpool()
     def __init__(self):
         pass
 
     def process_item(self, item, spider):
-        if item.__class__ == userRelationItem:
-            self.__dbpool.runInteraction(self.__sinaHandlerInstance.sinaRelationDBHandler,item)
-        if item.__class__ == userInfoItem:
-            self.__dbpool.runInteraction(self.__sinaHandlerInstance.sinaUserInfoDBHandler,item)
-        if item.__class__ == sinaMblogItem:
-            self.__dbpool.runInteraction(self.__sinaHandlerInstance.sinaMblogDBHandler,item)
+        if item.__class__ == sinaRelationItem:
+            self.__dbpool.runInteraction(self.__sinaHandlerInstance.relationDBHandler,item)
+#         if item.__class__ == userInfoItem:
+#             self.__dbpool.runInteraction(self.__sinaHandlerInstance.sinaUserInfoDBHandler,item)
+        if item.__class__ == sinaBlogItem:
+            self.__dbpool.runInteraction(self.__sinaHandlerInstance.sinaBlogDBHandler,item)
         if item.__class__ == sinaCommentItem:
             self.__dbpool.runInteraction(self.__sinaHandlerInstance.sinaCommentDBHandler,item)
         return item
 
 class doubanPipeline(object):
+    """豆瓣数据处理
+    """
     __doubanHandlerInstance = doubanHandler()
-    __dbpool = dbManager().get_dbpool()
+    __dbpool = dbManager('douban').get_dbpool()
     def __init__(self):
         pass
         
@@ -48,6 +53,8 @@ class doubanPipeline(object):
             self.__dbpool.runInteraction(self.__doubanHandlerInstance.userGroupRelationDBHandler,item)
         if item.__class__ == doubanFilmItem:#豆瓣电影信息
             self.__dbpool.runInteraction(self.__doubanHandlerInstance.filmInfoDBHandler, item)
+        if item.__class__ == doubanGroupInfoItem:#豆瓣小组信息
+            self.__dbpool.runInteraction(self.__doubanHandlerInstance.groupInfoDBHandler, item)
         return item
         
 

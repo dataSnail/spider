@@ -24,13 +24,13 @@ class doubanmysql2Redis():
         """豆瓣短评
         """
         for i in xrange(0,4720,25):
-            self.__redisDb.rpush('douban_comment','https://m.douban.com/rexxar/api/v2/movie/3541415/interests?count=20&start=%s'%i)
+            self.__redisDb.rpush('douban_comment','https://m.douban.com/rexxar/api/v2/movie/1866473/interests?count=20&start=%s'%i)
             
     def review2Redis(self):
         """豆瓣影评
         """
         for i in xrange(0,4720,25):
-            self.__redisDb.rpush('douban_reviews','https://m.douban.com/rexxar/api/v2/movie/3541415/reviews?count=25&start=%s&ck=&for_mobile=1'%i)
+            self.__redisDb.rpush('douban_review','https://m.douban.com/rexxar/api/v2/movie/3541415/reviews?count=25&start=%s&ck=&for_mobile=1'%i)
     
     def relation2Redis(self):
         """豆瓣关注关系 豆瓣粉丝
@@ -56,6 +56,36 @@ class doubanmysql2Redis():
         for t in tupleLs:
             self.__redisDb.rpush('douban_userInfo','https://m.douban.com/rexxar/api/v2/user/%s?ck=&for_mobile=1'%t[0])
             
+    def userGroup2Redis(self):
+        """用户加入小组url
+        """
+        selectSql = "select id from aa  WHERE id >= 14369802 ORDER BY id ASC"
+        tupleLs = self.__db.executeSelect(selectSql)
+        for t in tupleLs:
+            self.__redisDb.rpush('douban_userGroup','https://m.douban.com/rexxar/api/v2/group/user/%s/joined_groups?start=0&count=20&for_mobile=1'%t[0])
+#             print 'https://m.douban.com/rexxar/api/v2/group/user/%s/joined_groups?start=0&count=20&for_mobile=1'%t[0]
+    def group2Redis(self):
+        """用户加入小组url
+        """
+#         selectSql = "SELECT DISTINCT groupid FROM userGroupRelation where groupid > 235451 ORDER BY groupid ASC"
+        selectSql = "SELECT DISTINCT groupid FROM userGroupRelation LEFT JOIN groupInfo on userGroupRelation.groupid = groupInfo.id WHERE groupInfo.id is NULL"
+        tupleLs = self.__db.executeSelect(selectSql)
+        for t in tupleLs:
+            self.__redisDb.rpush('douban_group','https://m.douban.com/rexxar/api/v2/group/%s?ck=&for_mobile=1'%t[0])
+
+    def doubanTJGroup(self):
+        selectSql = "select memberNum,count from tj order by memberNum asc"
+        tupleLs = self.__db.executeSelect(selectSql)
+        result = []
+        summ = 126419
+        for t in tupleLs:
+            result.append([t[0]-1,summ])
+            summ = summ - t[1]
+        
+        for i in result:
+            print i
+            
+
 if __name__ == '__main__':
     a = doubanmysql2Redis()
-    a.reviewComment2Redis()
+    a.group2Redis()
