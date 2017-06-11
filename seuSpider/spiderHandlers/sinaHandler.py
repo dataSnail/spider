@@ -130,40 +130,73 @@ class sinaHandler(object):
         itemLs = sinaUserItemLs()
         uid = int(re.findall("containerid=230283(.+)_-_INFO",url)[0])
         item_dic = {}
-        for info_0 in json_data['cards']:
-            for info_1 in info_0['card_group']:
-                #昵称
-                if info_1['item_name'] == u"昵称":
-                    item_dic['nickName'] = info_1['item_content']
-                #认证
-                if info_1['item_type'] == 'verify_yellow':
-                    item_dic['verify'] = info_1['item_content']
-                #标签
-                if info_1['item_name'] == u"标签":
-                    item_dic['tag'] = info_1['item_content']
-                #性别
-                if info_1['item_name'] == u"性别":
-                    item_dic['gender'] = info_1['item_content']
-                #所在地
-                if info_1['item_name'] == u"所在地":
-                    item_dic['location'] = info_1['item_content']
-                #简介
-                if info_1['item_name'] == u"简介":
-                    item_dic['intro'] = info_1['item_content']
-                #博客
-                if info_1['item_name'] == u"博客":
-                    item_dic['blog'] = info_1['item_content']
-                #等级
-                if info_1['item_name'] == u"等级":
-                    item_dic['degree'] = info_1['item_content']
-                #信用
-                if info_1['item_name'] == u"阳光信用":
-                    item_dic['confidence'] = info_1['item_content']
-                #注册时间
-                if info_1['item_name'] == u"注册时间":
-                    item_dic['regtime'] = info_1['item_content']
-            if len(item_dic) == 10:
-                break
+        if json_data.has_key("cards"):
+            for info_0 in json_data['cards']:
+                if info_0.has_key('card_group'):
+                    for info_1 in info_0['card_group']:
+                        #昵称
+                        if info_1.has_key('item_name') and info_1['item_name'] == u"昵称":
+                            item_dic['nickName'] = info_1['item_content']
+                        #认证
+                        if info_1.has_key('item_type') and 'verify' in info_1['item_type']:
+                            item_dic['verify'] = info_1['item_content']
+                        #标签
+                        if info_1.has_key('item_name') and info_1['item_name'] == u"标签":
+                            item_dic['tag'] = info_1['item_content']
+                        #性别
+                        if info_1.has_key('item_name') and info_1['item_name'] == u"性别":
+                            item_dic['gender'] = info_1['item_content']
+                        #所在地
+                        if info_1.has_key('item_name') and info_1['item_name'] == u"所在地":
+                            item_dic['location'] = info_1['item_content']
+                        #简介
+                        if info_1.has_key('item_name') and info_1['item_name'] == u"简介":
+                            item_dic['intro'] = info_1['item_content']
+                        #博客
+                        if info_1.has_key('item_name') and info_1['item_name'] == u"博客":
+                            item_dic['blog'] = info_1['item_content']
+                        #等级
+                        if info_1.has_key('item_name') and info_1['item_name'] == u"等级":
+                            item_dic['degree'] = info_1['item_content']
+                        #信用
+                        if info_1.has_key('item_name') and info_1['item_name'] == u"阳光信用":
+                            item_dic['confidence'] = info_1['item_content']
+                        #注册时间
+                        if info_1.has_key('item_name') and info_1['item_name'] == u"注册时间":
+                            item_dic['regtime'] = info_1['item_content']
+        
+        
+        
+        if not item_dic.has_key('nickName'):
+            item_dic['nickName'] = "-11";
+        #认证
+        if not item_dic.has_key('verify'):
+            item_dic['verify'] = "-11"; 
+        #标签
+        if not item_dic.has_key('tag'):
+            item_dic['tag'] = "-11";
+        #性别
+        if not item_dic.has_key('gender'):
+            item_dic['gender'] = "-11";
+        #所在地
+        if not item_dic.has_key('location'):
+            item_dic['location'] = "-11";
+        #简介
+        if not item_dic.has_key('intro'):
+            item_dic['intro'] = "-11";
+        #博客
+        if not item_dic.has_key('blog'):
+            item_dic['blog'] = "-11";
+        #等级
+        if not item_dic.has_key('degree'):
+            item_dic['degree'] = "-11";
+        #信用
+        if not item_dic.has_key('confidence'):
+            item_dic['confidence'] = "-11";
+        #注册时间
+        if not item_dic.has_key('regtime'):
+            item_dic['regtime'] = '1900-01-01'
+
         item_list = []
         item_list.append(uid)
         item_list.append(item_dic['nickName'])
@@ -205,12 +238,25 @@ class sinaHandler(object):
         try:
             user_info_sql = 'insert ignore into userinfo_'+str(0) +\
             ' (uid,screen_name,statuses_count,verified,verified_reason,description,verified_type,gender,mbtype,ismember,fansNum,insert_time)' \
-            'VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())'
+            'VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())'
             cur.execute(user_info_sql,)
         except Exception as e:
 #             logging.error('DBError---->userInfo::'+str(item['uid'])+' did not insert into table'+','.join(tableLs))
             logging.error(e)
-            
+        
+    def sinaSingleUserInfoDBHandler(self,cur,item):
+        """处理新浪用户信息的数据库操作
+        """
+        try:
+            user_info_sql = 'insert ignore into userinfo'\
+            ' (uid,screen_name,verified,tag,gender,location,intro,blog,degree,confidence,regtime,insert_time)' \
+            'VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())'
+            print user_info_sql%item['sinaUserEntity'][0]
+            cur.execute(user_info_sql,item['sinaUserEntity'][0])
+        except Exception as e:
+#             logging.error('DBError---->userInfo::'+str(item['uid'])+' did not insert into table'+','.join(tableLs))
+            logging.error(e)
+        
     def sinaBlogDBHandler(self, cur, item):
         which_table = '0'#str(long(item['uid'][0]) % 1000)
         sql = 'INSERT IGNORE INTO wblog_' + which_table + ' (uid,' \

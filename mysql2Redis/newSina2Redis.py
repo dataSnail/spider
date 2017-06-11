@@ -31,7 +31,7 @@ class mysql2Redis():
         self.__url = 'http://m.weibo.cn/container/getSecond?containerid=100505%s_-_FOLLOWERS&page=%s'#2017.1.20 new url
         #数据库连接不上，停止运行程序30min = 1800s
         try:
-            self.__db = dbManager2(dbname="newsina")
+            self.__db = dbManager2(dbname="tim",host="223.3.94.145")
             self.__redisDb = redis.Redis(host=r2mConfig.REDIS_SERVER_IP,port= r2mConfig.REDIS_PORT,db=0,password=r2mConfig.REDIS_PASSWD)
         except Exception as e:
             logging.error('Exception in __init__ :::::%s  and sleep at :::%s-----1800s'%(str(e),time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))))
@@ -47,11 +47,27 @@ class mysql2Redis():
 #                 print u_url%str(uid[0])
         except Exception as e:
             logging.error('Exception in function::: getUserListFromMysql -------------------->%s'%str(e))
+    def gettttt(self):
+        try:
+            u_url  = "http://m.weibo.cn/container/getIndex?containerid=230283%s_-_INFO"
+            sql = 'SELECT uid from users_have_all_relations order by uid asc'
+            
+            sql2 = 'SELECT uid from ('\
+'SELECT users_have_all_relations.id,users_have_all_relations.uid,userinfo.id as id1 from users_have_all_relations LEFT JOIN userinfo ON users_have_all_relations.uid = userinfo.uid'\
+') a WHERE  id1 is NULL order by uid asc'
+            
+            uidLs = self.__db.executeSelect(sql2)
+            for uid in uidLs:
+                self.__redisDb.rpush('sinaUser',u_url%str(uid[0]))
+#                 print u_url%str(uid[0])
+        except Exception as e:
+            logging.error('Exception in function::: getUserListFromMysql -------------------->%s'%str(e))
 
 if __name__ == '__main__':
 #     print '------running------'
         a = mysql2Redis()
-        while 1:
-            a.getUserListFromMysql()
-            time.sleep(5)
+        a.gettttt()
+#         while 1:
+#             a.getUserListFromMysql()
+#             time.sleep(5)
 

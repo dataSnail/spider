@@ -2,7 +2,7 @@
 from seuSpider.utils.dbManager import dbManager
 from seuSpider.spiderHandlers.sinaHandler import sinaHandler
 from seuSpider.items.sinaItems import sinaCommentItem,\
-    sinaRelationItem, sinaBlogItem
+    sinaRelationItem, sinaBlogItem,sinaUserItem
 from seuSpider.spiderHandlers.doubanHandler import doubanHandler
 from seuSpider.items.doubanItems import doubanShortCommentItem, doubanReviewItem,\
     doubanRelationItem,doubanReviewCommentItem,\
@@ -13,7 +13,7 @@ class sinaPipeline(object):
     """新浪数据处理
     """
     __sinaHandlerInstance = sinaHandler()
-    __dbpool = dbManager('newsina').get_dbpool()
+    __dbpool = dbManager('tim').get_dbpool()
     def __init__(self):
         pass
 
@@ -26,6 +26,8 @@ class sinaPipeline(object):
             self.__dbpool.runInteraction(self.__sinaHandlerInstance.sinaBlogDBHandler,item)
         if item.__class__ == sinaCommentItem:
             self.__dbpool.runInteraction(self.__sinaHandlerInstance.sinaCommentDBHandler,item)
+        if item.__class__ == sinaUserItem:
+            self.__dbpool.runInteraction(self.__sinaHandlerInstance.sinaSingleUserInfoDBHandler,item)
         return item
 
 class doubanPipeline(object):

@@ -46,7 +46,7 @@ class spiderWorker(RedisSpider):
             yield Request(response.url,meta={'dont_redirect': True},dont_filter=True,callback=self.parse)
         else:
             #用户关系
-            item = sinaHandler().userHandler(json_data)
+            item = sinaHandler().userHandler(json_data,response.url)
             yield item
                 
                 

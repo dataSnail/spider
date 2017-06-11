@@ -11,5 +11,6 @@ if __name__ == '__main__':
 #     scrapy.cmdline.execute(argv=['scrapy', 'crawl','sina_comment'])
 #     scrapy.cmdline.execute(argv=['scrapy', 'crawl','sina_status'])#,settings={'LOG_FILE':'sina_status.log'}
 #     scrapy.cmdline.execute(argv=['scrapy', 'crawl','sinaBlogSpider'])
-    scrapy.cmdline.execute(argv=['scrapy', 'crawl','SinaSpider'])
+#     scrapy.cmdline.execute(argv=['scrapy', 'crawl','SinaSpider'])
+    scrapy.cmdline.execute(argv=['scrapy', 'crawl','sinaUserSpider'])
 
